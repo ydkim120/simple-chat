@@ -1,14 +1,19 @@
 module.exports = {
+  root: true,
   env: {
     browser: true,
     node: true
   },
   extends: [
     'plugin:vue/vue3-strongly-recommended',
-    'eslint:recommended'
+    'plugin:@typescript-eslint/recommended'
+    // 'eslint:recommended'
   ],
+  parser: "vue-eslint-parser",
   parserOptions: {
-    parser: 'babel-eslint'
+    parser: "@typescript-eslint/parser",
+    sourceType: 'module'
+    // parser: 'babel-eslint'
   },
   rules: {
     "vue/html-closing-bracket-newline": ["error", {
