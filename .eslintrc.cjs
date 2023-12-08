@@ -6,16 +6,23 @@ module.exports = {
   },
   extends: [
     'plugin:vue/vue3-strongly-recommended',
-    'plugin:@typescript-eslint/recommended'
+    'eslint:recommended',
+    '@vue/typescript/recommended'
+    // 'plugin:@typescript-eslint/recommended',
     // 'eslint:recommended'
   ],
   parser: "vue-eslint-parser",
   parserOptions: {
+    ecmaVersion: 2020,
+    jsx: true,
+    tsx: true,
     parser: "@typescript-eslint/parser",
     sourceType: 'module'
     // parser: 'babel-eslint'
   },
   rules: {
+    'no-var': 'error',
+    "quotes": ["warn", "single", { "avoidEscape": true }],
     "vue/html-closing-bracket-newline": ["error", {
       "singleline": "never",
       "multiline": "never"
