@@ -1,4 +1,4 @@
-import ConfirmDialog from '@/components/confirmDialog.vue';
+// import ConfirmDialog from '@/components/confirmDialog.vue';
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import './style.css'
@@ -17,7 +17,7 @@ createApp(App)
   .use(router)
   .use(pinia)
   .use(PrimeVue, { ripple: true })
-  .component('ConfirmDialog', ConfirmDialog)
+  // .component('ConfirmDialog', ConfirmDialog)
   .mount('#app')
 
 

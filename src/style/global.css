@@ -5,6 +5,11 @@
   --dark-gray: #4a566a;
   --light-gray: #888;
   --lightest-gray: #f7f7f7;
+
+  --green: #609966;
+  --dark-green: #40513B;
+  --apple-green: #9DC08B;
+  --beige-green: #EDF1D6;
   --white: #fff;
 
   --lumDark: 45%;
@@ -20,7 +25,12 @@
   --border-radius: 6px;
 
   --header-z-index: 100;
-  --aside-z-index: 50;
+  --side-z-index: 50;
+
+  --main-green1: var(--green);
+  --main-green2: var(--dark-green);
+  --main-green3: var(--apple-green);
+  --main-green4: var(--beige-green);
 }
 
 html,

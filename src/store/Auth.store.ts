@@ -98,7 +98,7 @@ export const userAuthStore: any = defineStore({
       }
 
       const messageBySupabaseAuth = {
-        'Invalid login credentials': '등록되지 않은 이메일 입니다. 다시 확인해주세요.'
+        'Invalid login credentials': '이메일 또는 비밀번호를 잘못 입력했습니다. 입력하신 내용을 다시 확인해주세요.'
       }[msg]
       if (messageBySupabaseAuth) return messageBySupabaseAuth
       return msg

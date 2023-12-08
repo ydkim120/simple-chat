@@ -1,78 +1,90 @@
 <template>
   <div class="register-form" v-loading="loginLoading">
     <h3>이메일로 회원가입</h3>
-    <ul class="register-form-input-list">
-      <li>
-        <p class="register-form-field">
-          <span class="-required">Email</span>
-        </p>
-        <input
-          v-model="email"
-          type="text"
-          placeholder="이메일을 입력하세요."
-          @blur="() => { 
-            if (email) email = email.trim() 
-          }"
-          @keypress.enter.native="handleRegisterUser()"
-        />
-      </li>
-      <li>
-        <p class="register-form-field">
-          <span class="-required">비밀번호</span>
-        </p>
-        <input 
-          v-model="password" 
-          type="password" 
-          placeholder="password를 입력하세요."
-          @keypress.enter.native="handleRegisterUser()"
-        />
-      </li>
-      <li>
-        <p class="register-form-field">
-          <span class="-required">닉네임</span>
-        </p>
-        <input
-          v-model="userName"
-          type="text"
-          placeholder="닉네임을 입력하세요."
-          @blur="() => { 
-            if (userName) userName = userName.trim() 
-          }"
-          @keypress.enter.native="handleRegisterUser()"
-        />
-      </li>
-    </ul>
-    <button @click="handleRegisterUser">
-      완료
-    </button>
-    <ul class="banner-list">
-      <li>
-        계정이 이미 있으신가요?&nbsp;
-        <router-link
-          :to="{ name: 'login-user' }"
-          class="banner-link"
-        >
-          로그인
-        </router-link>
-      </li>
-    </ul>
+    <template v-if="!isPassed" >
+      <ul class="register-form-input-list">
+        <li>
+          <p class="register-form-field">
+            <span class="-required">Email</span>
+          </p>
+          <input
+            v-model="email"
+            type="text"
+            placeholder="이메일을 입력하세요."
+            @blur="() => { 
+              if (email) email = email.trim() 
+            }"
+            @keypress.enter.native="handleRegisterUser()"
+          />
+        </li>
+        <li>
+          <p class="register-form-field">
+            <span class="-required">비밀번호</span>
+          </p>
+          <input 
+            v-model="password" 
+            type="password" 
+            placeholder="password를 입력하세요."
+            @keypress.enter.native="handleRegisterUser()"
+          />
+        </li>
+        <li>
+          <p class="register-form-field">
+            <span class="-required">닉네임</span>
+          </p>
+          <input
+            v-model="userName"
+            type="text"
+            placeholder="닉네임을 입력하세요."
+            @blur="() => { 
+              if (userName) userName = userName.trim() 
+            }"
+            @keypress.enter.native="handleRegisterUser()"
+          />
+        </li>
+      </ul>
+      <button @click="handleRegisterUser">
+        회원가입 승인 메일 보내기
+      </button>
+      <ul class="banner-list">
+        <li>
+          계정이 이미 있으신가요?&nbsp;
+          <router-link
+            :to="{ name: 'login-user' }"
+            class="banner-link"
+          >
+            로그인
+          </router-link>
+        </li>
+      </ul>
+    </template>
+    <template v-else >
+      <p class="alert-send-email">
+        ✔️ 회원가입 승인 링크가 이메일로 전송되었습니다.
+      </p>
+      <router-link
+        :to="{ name: 'login-user' }"
+        class="banner-link"
+      >
+        로그인 하러 가기
+      </router-link>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/store/Auth.store'
 import { regExpStore } from '@/store/RegExp.store'
 
 const store = userAuthStore()
 const regExpTest = regExpStore()
-const router = useRouter()
 
 const loginLoading = ref(false)
 const email = ref('')
 const password = ref('')
 const userName = ref('')
+const isPassed = ref(false)
 
 const handleRegisterUser = async () => {
   try {
@@ -81,7 +93,7 @@ const handleRegisterUser = async () => {
     if (!password.value) throw new Error('VALUE_IS_NULL: PASSWORD')
     if (!userName.value) throw new Error('VALUE_IS_NULL: USER_NAME')
 
-    const done = confirm('입력하신 정보로 사용자 등록을 진행하시겠습니까?')
+    const done = confirm('입력하신 이메일 정보로 회원가입 승인 절차를 계속하시겠습니까?')
     if(!done) return
 
     loginLoading.value = true
@@ -93,8 +105,7 @@ const handleRegisterUser = async () => {
     })
     console.log('data:: ', data)
     if (!error) {
-      alert('등록 성공했습니다. 로그인을 진행해주세요.')
-      return router.push({ name: 'login-user' })
+      isPassed.value = true
     }
   } catch (error) {
     const errorMessage = store.getErrorMessage(error)
@@ -130,10 +141,11 @@ const handleRegisterUser = async () => {
     justify-content: center;
     margin-top: var(--gap-s);
     color: var(--light-gray);
-    .banner-link { 
-      font-weight: bold; 
-      &:hover { text-decoration: underline; }
-    }
   }
+  .banner-link { 
+    font-weight: bold; 
+    &:hover { text-decoration: underline; }
+  }
+  .alert-send-email { margin: 40px 0; }
 }
 </style>

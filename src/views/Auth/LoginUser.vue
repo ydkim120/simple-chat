@@ -34,8 +34,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/store/Auth.store'
 import { regExpStore } from '@/store/RegExp.store'
+
+const router = useRouter()
 
 const store = userAuthStore()
 const regExpTest = regExpStore()
@@ -57,7 +60,10 @@ const handleLoginEmail = async () => {
       password: password.value
     })
     console.log('data:: ', data)
-    if (!error) return alert('Check your email for the login!')
+    if (!error) {
+      alert('Check your email for the login!')
+      return router.push({ name: 'chat-main' })
+    }
   } catch (error) {
     const errorMessage = store.getErrorMessage(error)
     if (errorMessage) alert(errorMessage)
