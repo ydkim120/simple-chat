@@ -7,7 +7,8 @@
           <p class="register-form-field">
             <span class="-required">Email</span>
           </p>
-          <input
+          <InputText
+            class="register-form-input"
             v-model="email"
             type="text"
             placeholder="이메일을 입력하세요."
@@ -21,18 +22,21 @@
           <p class="register-form-field">
             <span class="-required">비밀번호</span>
           </p>
-          <input 
+          <Password 
+            class="register-form-input"
             v-model="password" 
-            type="password" 
             placeholder="password를 입력하세요."
             @keypress.enter.native="handleRegisterUser()"
+            :feedback="false"
+            toggleMask
           />
         </li>
         <li>
           <p class="register-form-field">
             <span class="-required">닉네임</span>
           </p>
-          <input
+          <InputText
+            class="register-form-input"
             v-model="userName"
             type="text"
             placeholder="닉네임을 입력하세요."
@@ -43,9 +47,7 @@
           />
         </li>
       </ul>
-      <button @click="handleRegisterUser">
-        회원가입 승인 메일 보내기
-      </button>
+      <Button @click="handleRegisterUser" label="회원가입 승인 메일 보내기" />
       <ul class="banner-list">
         <li>
           계정이 이미 있으신가요?&nbsp;
@@ -117,7 +119,11 @@ const handleRegisterUser = async () => {
 
 <style scoped>
 .register-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px 40px;
+  margin: 30vh auto;
   box-shadow: 0 4px 20px 0 rgba(224, 224, 224, 0.7);
   width: 500px;
 
@@ -126,13 +132,18 @@ const handleRegisterUser = async () => {
     flex-direction: column;
     gap: var(--gap-xs);
     margin: 40px 0;
+    width: 100%;
     & li {
       display: flex;
       align-items: center;
       gap: var(--gap-s);
+      width: 100%;
       & .register-form-field {
         text-align: left;
-        width: 150px;
+        width: 100px;
+      }
+      & .register-form-input {
+        width: 100%;
       }
     }
   }

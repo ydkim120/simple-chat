@@ -10,7 +10,7 @@ import ChatSideNav from '@/components/ChatSideNav.vue'
 </script>
 
 <style scoped>
-.chat-main { background-color: var(--main-green1); }
+.chat-main { background-color: var(--main-green4); }
 .side-nav {
   position: fixed;
   top: 0;

@@ -2,23 +2,22 @@
   <div class="login-form">
     <h3>Email 로그인</h3>
     <div class="login-form-input-wrap">
-      <input 
-        v-model="email" 
-        type="text" 
-        placeholder="email" 
+      <InputText
+        v-model="email"
+        type="text"
+        placeholder="이메일"
         @blur="() => { if(email) email = email.trim() }"
-        @keypress.enter.native="handleLoginEmail()" 
+        @keypress.enter.native="handleLoginEmail()"
       />
-      <input 
-        type="password" 
-        v-model="password" 
-        placeholder="password"  
-        @keypress.enter.native="handleLoginEmail()" 
+      <Password
+        v-model="password"
+        placeholder="비밀번호"
+        @keypress.enter.native="handleLoginEmail()"
+        :feedback="false"
+        toggleMask
       />
     </div>
-    <button @click="handleLoginEmail">
-      로그인
-    </button>
+    <Button @click="handleLoginEmail" label="로그인" />
     <ul class="banner-list">
       <li>
         <router-link 
@@ -69,12 +68,15 @@ const handleLoginEmail = async () => {
     if (errorMessage) alert(errorMessage)
   } finally { loginLoading.value = false }
 }
-
 </script>
 
 <style scoped>
 .login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px 40px;
+  margin: 30vh auto;
   box-shadow: 0 4px 20px 0 rgba(224, 224, 224, 0.7);
   width: 500px;
 
@@ -83,6 +85,7 @@ const handleLoginEmail = async () => {
     flex-direction: column;
     gap: var(--gap-xs);
     margin: 40px 0;
+    width: 100%;
   }
 
   .banner-list { 
