@@ -6,7 +6,7 @@
     <ul class="chat-side-nav -user-info">
       <li>유저 정보</li>
       <li>
-        <button>로그아웃</button>
+        <Button @click="handleLogout" label="로그아웃" />
       </li>
     </ul>
 
@@ -14,7 +14,21 @@
 </template>
 
 <script setup lang="ts">
+import { userAuthStore } from '@/store/Auth.store'
 
+const store = userAuthStore()
+
+const handleLogout = async () => {
+  const done = confirm('로그아웃 하시겠습니까?')
+  if (!done) return
+
+  try {
+    await store.logoutUser()
+  } catch (error) {
+    const errorMessage = store.getErrorMessage(error)
+    if (errorMessage) alert(errorMessage)
+  }
+}
 </script>
 
 <style scoped>
