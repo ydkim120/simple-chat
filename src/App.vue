@@ -9,24 +9,48 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { supabase as sb } from '@/supabase'
+import { userAuthStore } from '@/store/Auth.store'
+import { useCookies } from "vue3-cookies"
 
 const router = useRouter()
 
-onMounted(() => {
-  pageRedirect ()
+const store = userAuthStore()
+
+const { cookies } = useCookies()
+
+onMounted(async () => {
+  if (!await isAvailableToken()) return
+  await pageRedirect ()
   console.log(`컴포넌트가 마운트 됐습니다.`)
 })
 
-const pageRedirect = () => {
-  const session = sb.auth.currentSession
-  console.log('session ===> ', session)
+const isAvailableToken = () => {
+  const access_token = cookies.get('access_token')
+  const refresh_token = cookies.get('refresh_token')
 
-  if (session === null) { 
-    alert('세션이 만료되어 로그인 페이지로 이동합니다.')
+  if (!access_token || !refresh_token) {
+    store.logoutUser()
+    return false
+  }
+  return true
+}
+
+const pageRedirect = async () => {
+  try {
+    const { session } = await store.getSession()
+
+    if (!session && store.isAuth) {
+      const { data } = await store.refreshSession()
+      if (!data?.user) {
+        alert('세션이 만료되었습니다. 다시 로그인 해주세요.')
+        return store.logoutUser()
+      }
+    }
+  } catch (error) {
+    const errorMessage = store.getErrorMessage(error)
+    if (errorMessage) alert(errorMessage)
     return router.push({ name: 'login-user' })
-  } else if (session === undefined) return router.push({ name: 'login-user' })
-  else return false
+  }
 }
 
 </script>

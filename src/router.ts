@@ -1,4 +1,5 @@
-import { createWebHistory, createRouter } from "vue-router";
+import { createWebHistory, createRouter } from "vue-router"
+import { supabase as sb } from '@/supabase'
 
 const routes = [
   {
@@ -37,6 +38,21 @@ const router = createRouter({
     return { top: 0 }
   },
   routes,
+})
+
+router.beforeEach(async (to, from, next) => {
+  // const user = supabase.auth.user();
+  const { data: { session } } = await sb.auth.getSession()
+
+  if (to.matched.some((res) => res.meta.auth)) {
+    if (session?.user) {
+      next()
+      return
+    }
+    next({ name: 'login-user' })
+    return
+  }
+  next()
 });
 
 export default router;
