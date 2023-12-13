@@ -3,16 +3,20 @@ import router from '../router'
 import { supabase as sb } from '@/supabase'
 import { useCookies } from "vue3-cookies"
 // import { requestLogin, requestRegister } from '../services/auth';
-import { loginUserType, registerUserType, SystemError, sessionObjType } from '@/@types'
+import { loginUserType, registerUserType, SystemError, userInfoType,  sessionObjType } from '@/@types'
 
 const { cookies } = useCookies()
 
+interface authState {
+  userInfo: null | userInfoType,
+  isAuth: boolean
+}
+
 export const userAuthStore: any = defineStore({
   id: 'auth',
-  state: () => ({
-    currentUser: undefined,
-    isAuth: false,
-    // message: "",
+  state: (): authState => ({
+    userInfo: null,
+    isAuth: false
   }),
   getters: {
     // getMessageAuth: (state) => state.message,
@@ -29,7 +33,7 @@ export const userAuthStore: any = defineStore({
         const { data, error } = result
         if (error) throw error
         this.isAuth = true
-        if (data?.session) this.saveToken(data.session)
+        if (data?.session) await this.saveToken(data.session)
         return result
 
       } catch (error) {
@@ -54,12 +58,12 @@ export const userAuthStore: any = defineStore({
      } catch (error) { throw error }
     },
     // 사용자 정보 상세 조회
-    async getUserInfo(accessToken: string) {
-      try {
-        const data = await sb.auth.admin.getUserById(accessToken)
-        if (data?.error) throw data.error
-        return data
-      } catch (error) { throw error }
+    async setUserInfo(accessToken: string) {
+      if (!accessToken) return 
+
+      const { data: { user }, error } = await sb.auth.getUser(accessToken)
+      if (error) this.userInfo = null
+      this.userInfo = user
     },
 
     // 로그아웃
@@ -67,7 +71,7 @@ export const userAuthStore: any = defineStore({
       try {
         const { error } = await sb.auth.signOut()
         if (error) throw error
-        this.currentUser = undefined
+        this.userInfo = null
         this.isAuth = false
         cookies.remove('access_token')
         cookies.remove('refresh_token')
@@ -131,11 +135,13 @@ export const userAuthStore: any = defineStore({
     // ====== 세션 관련 ======
     // 세션 유지 위한 토큰 저장
     // 토큰 만료: 1일
-    saveToken (session: sessionObjType) {
+    async saveToken (session: sessionObjType) {
       if (session) {
         const { access_token, refresh_token }: sessionObjType = session
         cookies.set('access_token', access_token, '1d')
         cookies.set('refresh_token', refresh_token, '1d')
+
+        await this.setUserInfo(access_token)
       }
     },
     // 세션 유지

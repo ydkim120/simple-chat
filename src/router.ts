@@ -19,7 +19,7 @@ const routes = [
     component: () => import('./views/Chat/ChatMain.vue'),
     children: [
       {
-        path: "chat-list",
+        path: "chat",
         name: "chat-list",
         component: () => import('./views/Chat/ChatList.vue')
       },
