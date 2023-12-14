@@ -1,9 +1,11 @@
 import { createWebHistory, createRouter } from "vue-router"
+import { userAuthStore } from '@/store/Auth.store'
 import { supabase as sb } from '@/supabase'
+
 
 const routes = [
   {
-    path: "/login",
+    path: "/",
     name: "login-user",
     component: () => import('./views/Auth/LoginUser.vue')
   },
@@ -13,19 +15,28 @@ const routes = [
     component: () => import('./views/Auth/RegisterUser.vue')
   },
   {
-    path: "/",
+    path: "/chat",
     name: "chat-main",
     redirect: { name: 'chat-list' },
+    meta: {
+      requiresAuth: true
+    },
     component: () => import('./views/Chat/ChatMain.vue'),
     children: [
       {
-        path: "chat",
+        path: "",
         name: "chat-list",
+        meta: {
+          requiresAuth: true
+        },
         component: () => import('./views/Chat/ChatList.vue')
       },
       {
         path: "chat/:id",
         name: "chat-detail",
+        meta: {
+          requiresAuth: true
+        },
         component: () => import('./views/Chat/ChatDetail.vue')
       },
     ]
@@ -37,22 +48,31 @@ const router = createRouter({
   scrollBehavior(to, from, savedPosition) {
     return { top: 0 }
   },
-  routes,
+  routes
 })
 
 router.beforeEach(async (to, from, next) => {
-  // const user = supabase.auth.user();
-  const { data: { session } } = await sb.auth.getSession()
+  const authStore = userAuthStore()
 
-  if (to.matched.some((res) => res.meta.auth)) {
-    if (session?.user) {
+  if (to.meta.requiresAuth) {
+    const { session } = await authStore.getSession()
+
+    if (session) await authStore.saveToken(session)
+    else {
+      const { data } = await authStore.refreshSession()
+      if (!data?.user) {
+        // alert('세션이 만료되었습니다. 다시 로그인 해주세요.')
+        return await authStore.logoutUser()
+      } else await authStore.saveToken(data.session)
+    }
+
+    if (authStore.isAuth && authStore.userInfo) {
       next()
       return
-    }
+    } else return next({ name: 'login-user' })
+  } else if (to.name !== 'login-user') {
     next({ name: 'login-user' })
-    return
-  }
-  next()
-});
+  } else next()
+})
 
 export default router;
