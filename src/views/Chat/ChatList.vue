@@ -1,7 +1,7 @@
 <template>
   <div class="chat-room-list-wrap">
     <ul class="chat-room-list">
-      <li class="chat-room-item">
+      <li class="chat-room-item" @click="routeToDetail">
         채팅방 목록쓰
       </li>
     </ul>
@@ -9,7 +9,18 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+
+const routeToDetail = () => {
+  router.push({ 
+    name: 'chat-detail',
+    params: {
+      id: 'ydkim'
+    }
+  })
+}
 </script>
 
 <style scoped>

@@ -32,7 +32,7 @@ export const userAuthStore: any = defineStore({
         })
         const { data, error } = result
         if (error) throw error
-        this.isAuth = true
+        
         if (data?.session) await this.saveToken(data.session)
         return result
 
@@ -49,7 +49,7 @@ export const userAuthStore: any = defineStore({
          password: registerForm.password,
          options: {
           data: {
-            userName: registerForm.userName
+             user_name: registerForm.user_name
           }
          }
        })
@@ -57,26 +57,24 @@ export const userAuthStore: any = defineStore({
        return result
      } catch (error) { throw error }
     },
-    // 사용자 정보 상세 조회
+    // 사용자 정보 저장
     async setUserInfo(accessToken: string) {
       if (!accessToken) return 
 
       const { data: { user }, error } = await sb.auth.getUser(accessToken)
       if (error) this.userInfo = null
-      this.userInfo = user
+      this.userInfo = JSON.parse(JSON.stringify(user))  
     },
 
     // 로그아웃
     async logoutUser () {
-      try {
-        const { error } = await sb.auth.signOut()
-        if (error) throw error
-        this.userInfo = null
-        this.isAuth = false
-        cookies.remove('access_token')
-        cookies.remove('refresh_token')
-        router.push({ name: 'login-user' })
-      } catch (error) { throw error }
+      const { error } = await sb.auth.signOut()
+      this.userInfo = null
+      this.isAuth = false
+      cookies.remove('access_token')
+      cookies.remove('refresh_token')
+      router.push({ name: 'login-user' })
+      if (error) throw error
       // localStorage.removeItem("todo");
       // this.message = "";
     },
@@ -137,6 +135,8 @@ export const userAuthStore: any = defineStore({
     // 토큰 만료: 1일
     async saveToken (session: sessionObjType) {
       if (session) {
+        console.log('session::', session)
+
         const { access_token, refresh_token }: sessionObjType = session
         cookies.set('access_token', access_token, '1d')
         cookies.set('refresh_token', refresh_token, '1d')
@@ -173,12 +173,9 @@ export const userAuthStore: any = defineStore({
     async getSession() {
       const result = await sb.auth.getSession()
       const { data: { session }, error } = result
-      console.log('session ===>', result)
-      if (session) {
-        this.isAuth = true
-        return session
-      }
+
       if (error) throw error
+      this.isAuth = true
       return { session }
     },
     // 세션 refresh

@@ -24,10 +24,15 @@
   --gap-s: 20px;
   --gap-xs: 10px;
 
+  --border-radius-s: 4px;
   --border-radius: 6px;
+  --border-radius-m: 8px;
+  --border-radius-l: 10px;
 
   --header-z-index: 100;
-  --side-z-index: 50;
+  --side-nav-z-index: 50;
+
+  --side-nav-width: 300px;
 
   --main-green1: var(--green);
   --main-green2: var(--dark-green);
@@ -62,6 +67,7 @@ p {
 
 ul,
 li {
+  display: block;
   padding: 0;
   margin: 0;
   list-style: none;
@@ -77,6 +83,8 @@ textarea {
   border-radius: var(--border-radius);
   color: var(--dark-gray);
 }
+
+.-page-wrap { width: 100%; }
 
 .-required {
   position: relative;
@@ -126,39 +134,4 @@ textarea {
 
 .link-button.-gray:hover {
   color: hsl(var(--dark-gray), var(--lumDark));
-}
-
-.admin-button {
-  display: inline-block;
-  padding: 0 var(--gap);
-  height: 45px;
-  background-color: var(--dark-gray);
-  border-radius: var(--border-radius);
-  color: var(--white);
-  font-size: 16px;
-  line-height: 45px;
-  text-align: center;
-  transition: all .2s;
-}
-
-.admin-button:hover {
-  filter: brightness(90%);
-  color: #fff;
-}
-
-.admin-button.-invert {
-  color: var(--dark-gray);
-  background-color: var(--white);
-  border: 1px solid var(--dark-gray);
-}
-
-.admin-button.-blue {
-  color: var(--main-blue);
-  background-color: var(--white);
-  border: 1px solid var(--main-blue);
-}
-
-.admin-button.-blue:hover {
-  background-color: var(--main-blue);
-  color: var(--white);
 }

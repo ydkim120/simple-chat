@@ -13,6 +13,9 @@ import 'primeicons/primeicons.css' //icons
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
+import InlineMessage from 'primevue/inlinemessage'
+import PanelMenu from 'primevue/panelmenu'
+import Editor from 'primevue/editor'
 
 const pinia = createPinia()
 
@@ -23,6 +26,9 @@ createApp(App)
   .component('Button', Button)
   .component('InputText', InputText)
   .component('Password', Password)
+  .component('InlineMessage', InlineMessage)
+  .component('PanelMenu', PanelMenu)
+  .component('Editor', Editor)
   // .component('ConfirmDialog', ConfirmDialog)
   .mount('#app')
 

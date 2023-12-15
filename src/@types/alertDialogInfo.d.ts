@@ -1,7 +1,7 @@
 export type confirmDialog = {
   message: string,
   header: string,
-  accept: function | undefined,
-  reject: function | undefined
+  accept: any,
+  reject: any
 } | null
 

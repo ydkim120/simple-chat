@@ -4,7 +4,7 @@ export type loginUserType = {
 }
 
 export type registerUserType = {
-  userName: string;
+  user_name: string;
   password: string;
   email: string;
 }
@@ -12,7 +12,7 @@ export type registerUserType = {
 export type userInfoType = {
   created_at: string;
   email?: string | undefined;
-  id: string;
+  id?: string | undefined;
   phone?: string | undefined;
   updated_at?: string | undefined;
   user_metadata?: any;
