@@ -61,9 +61,12 @@
       </ul>
     </template>
     <template v-else >
-      <p class="alert-send-email">
-        ✔️ 회원가입 승인 링크가 이메일로 전송되었습니다.
-      </p>
+      <InlineMessage
+        class="success-send-email"
+        severity="success"
+      >
+        회원가입 승인 링크가 이메일로 전송되었습니다.
+      </InlineMessage>
       <router-link
         :to="{ name: 'login-user' }"
         class="banner-link"
@@ -157,6 +160,6 @@ const handleRegisterUser = async () => {
     font-weight: bold; 
     &:hover { text-decoration: underline; }
   }
-  .alert-send-email { margin: 40px 0; }
+  .success-send-email { margin: 40px 0; }
 }
 </style>

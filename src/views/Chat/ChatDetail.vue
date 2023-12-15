@@ -20,7 +20,7 @@
     <div class="new-chat-wrap">
       <Editor
         v-model="newMsg"
-        editorStyle="height: 300px"
+        editorStyle="height: 320px"
         class="new-chat-editor"
         ref="chatEditorRef"
         @keyup.enter="createNewChat(newMsg)"
@@ -68,7 +68,7 @@ onMounted(async () => {
 
 const getAllChats = async () => {
   try {
-    const result = await chatStore.getAllChats(1, 10)
+    const result = await chatStore.getAllChats(1, 1000)
     chatList.value = result
     console.log('채팅 리스트 >>>', result)
 
@@ -85,9 +85,12 @@ const createNewChat = async (chat: string) => {
     try {
       const result = await chatStore.createNewChat(newMsg.value)
       if (result) {
-        if(chatEditorRef.value) {
-          debugger
-          chatEditorRef.value.editor.deleteText()
+        const editorRef = chatEditorRef.value
+        const quillEditor = editorRef?.quill?.editor || null
+        if(quillEditor) {
+          quillEditor.deleteText()
+          // chatEditorRef.value..deleteText()
+          // chatEditorRef.value.editor.focus()
         }
         await getAllChats()
       }
@@ -102,6 +105,8 @@ const createNewChat = async (chat: string) => {
 <style scoped>
 .chat-room-detail-wrap { position: relative; }
 .chat-list {
+  max-height: calc(100vh - 400px);
+  overflow-y: auto;
   .chat-item {
     display: flex;
     justify-content: flex-start;

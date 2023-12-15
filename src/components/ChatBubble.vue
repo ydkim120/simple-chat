@@ -105,7 +105,7 @@ const dateSimple = (date: string) => {
 
   .chat-bubble-time-wrap {
     position: relative;
-    width: 70px;
+    min-width: 60px;
     .chat-bubble-time {
       position: absolute;
       bottom: 0;

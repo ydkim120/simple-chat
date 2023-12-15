@@ -25,7 +25,7 @@ export const chatStore: any = defineStore({
         .from('chats')
         .select()
         .range(from, to)
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: true })
         // .stream(primaryKey: ['id'])
         // .map((maps) => maps
         //   .map((map) => Message.fromMap(map: map, myUserId: myUserId))

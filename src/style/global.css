@@ -42,6 +42,7 @@
 
 html,
 body {
+  margin: 0;
   max-width: 100vw;
   min-height: 100vh;
   font-family: 'Noto Sans Korean', 'Apple SD Gothic Neo', Arial, Helvetica, sans-serif;
