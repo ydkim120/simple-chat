@@ -76,9 +76,10 @@ const handleLoginEmail = async () => {
   flex-direction: column;
   align-items: center;
   padding: 20px 40px;
-  margin: 30vh auto;
+  margin: 50vh auto;
   box-shadow: 0 4px 20px 0 rgba(224, 224, 224, 0.7);
   width: 500px;
+  transform: translate(0, -50%);
 
   .login-form-input-wrap {
     display: flex;

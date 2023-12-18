@@ -2,6 +2,48 @@
   <div class="register-form" v-loading="loginLoading">
     <h3>이메일로 회원가입</h3>
     <template v-if="!isPassed" >
+      <div class="register-form-photo">
+        <FileUpload
+          name="demo[]"
+          url=""
+          accept="image/*"
+          custom-upload
+          @select="customBase64Uploader"
+          @clear="userPhoto = undefined"
+          class="register-form-photo-uploader"
+        >
+          <template #header="{ chooseCallback, clearCallback }">
+            <Button
+              :icon="`pi ${userPhoto ? 'pi-pencil' : 'pi-images'}`" 
+              size="small"
+              rounded
+              outlined
+              :label="userPhoto ? 'Edit' : 'Add'"
+              @click="chooseCallback()"
+            />
+            <Button
+              v-if="userPhoto"
+              @click="clearCallback()" 
+              icon="pi pi-times" 
+              rounded
+              outlined
+              severity="danger"
+            />
+          </template>
+          <template #content>
+            <div class="user-photo-wrap">
+              <img
+                v-if="userPhoto"
+                :src="userPhoto || ''"
+                :alt="'profilePhoto'"
+              />
+              <span v-else class="default-photo">
+                <i class="pi pi-user user-icon" />
+              </span>
+            </div>
+          </template>
+        </FileUpload>
+      </div>
       <ul class="register-form-input-list">
         <li>
           <p class="register-form-field">
@@ -89,6 +131,7 @@ const loginLoading = ref(false)
 const email = ref('')
 const password = ref('')
 const userName = ref('')
+const userPhoto = ref()
 const isPassed = ref(false)
 
 const handleRegisterUser = async () => {
@@ -106,7 +149,8 @@ const handleRegisterUser = async () => {
     const { data, error } = await store.registerUser({
       email: email.value,
       password: password.value,
-      userName: userName.value
+      user_name: userName.value,
+      user_photo: userPhoto.value
     })
     console.log('data:: ', data)
     if (!error) {
@@ -118,6 +162,20 @@ const handleRegisterUser = async () => {
   } finally { loginLoading.value = false }
 }
 
+const customBase64Uploader = async (event) => {
+  console.log('files:: ', event.files)
+  const file = event.files[event.files.length - 1]
+  const reader = new FileReader()
+  let blob = await fetch(file.objectURL).then((r) => r.blob())
+
+  reader.readAsDataURL(blob)
+
+  reader.onloadend = function () {
+    const base64data = reader.result
+    userPhoto.value = base64data || undefined
+  }
+}
+
 </script>
 
 <style scoped>
@@ -126,10 +184,48 @@ const handleRegisterUser = async () => {
   flex-direction: column;
   align-items: center;
   padding: 20px 40px;
-  margin: 30vh auto;
+  margin: 50vh auto;
   box-shadow: 0 4px 20px 0 rgba(224, 224, 224, 0.7);
   width: 500px;
+  transform: translate(0, -50%);
 
+  .register-form-photo {
+    margin: 40px auto 0;
+    .user-photo-wrap {
+      position: relative;
+      overflow: hidden;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 1px solid var(--disable);
+      cursor: pointer;
+      > * { width: 150px; height: 150px; }
+      img { object-fit: cover; }
+    }
+    /deep/ .register-form-photo-uploader {
+      .p-fileupload-buttonbar {
+        position: absolute;
+        padding: 0;
+        background-color: var(--white);
+        border: none;
+        gap: none;
+      }
+    }
+    .default-photo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      width: 150px;
+      height: 150px;
+      .user-icon {
+        font-size: 100px;
+        color: var(--disable);
+        z-index: 1;
+      }
+    }
+
+  }
   .register-form-input-list {
     display: flex;
     flex-direction: column;

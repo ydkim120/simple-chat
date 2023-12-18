@@ -38,6 +38,8 @@
   --main-green2: var(--dark-green);
   --main-green3: var(--apple-green);
   --main-green4: var(--beige-green);
+
+  --disable: var(--main-green3);
 }
 
 html,

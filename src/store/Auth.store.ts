@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import router from '../router'
 import { supabase as sb } from '@/supabase'
 import { useCookies } from "vue3-cookies"
+import { decode } from 'base64-arraybuffer'
 // import { requestLogin, requestRegister } from '../services/auth';
 import { loginUserType, registerUserType, SystemError, userInfoType,  sessionObjType } from '@/@types'
 
@@ -32,7 +33,7 @@ export const userAuthStore: any = defineStore({
         })
         const { data, error } = result
         if (error) throw error
-        
+
         if (data?.session) await this.saveToken(data.session)
         return result
 
@@ -44,18 +45,44 @@ export const userAuthStore: any = defineStore({
     // 사용자 등록
     async registerUser (registerForm: registerUserType) {
      try {
+       if (registerForm.user_photo) {
+         const { data, error } = await this.userPhotoUpload(registerForm.user_photo, registerForm.email)
+         if (error) return { data, error }
+       }
+
        const result = await sb.auth.signUp({
          email: registerForm.email,
          password: registerForm.password,
          options: {
           data: {
-             user_name: registerForm.user_name
+            user_name: registerForm.user_name
           }
          }
        })
        if (result?.error) throw result.error
+
        return result
      } catch (error) { throw error }
+    },
+    // 사용자 프로필 사진 버킷에 업로드
+    async userPhotoUpload (photo: string, email: string) {
+      const base64 = photo.split('base64,')[1]
+
+      const { data, error } = await sb
+        .storage
+        .from('avatars')
+        .upload(`public/${email}.png`, decode(base64), {
+          contentType: 'image/png'
+        })
+      return { data, error }
+    },
+    // 버킷에서 사용자 프로필 사진 파일 검색
+    async findUserPhotoInBucket (email: string) {
+      const { data, error } = await sb
+        .storage
+        .from('avatars')
+        .download(`public/${email}.png`)
+      return { data, error }
     },
     // 사용자 정보 저장
     async setUserInfo(accessToken: string) {
@@ -63,7 +90,27 @@ export const userAuthStore: any = defineStore({
 
       const { data: { user }, error } = await sb.auth.getUser(accessToken)
       if (error) this.userInfo = null
-      this.userInfo = JSON.parse(JSON.stringify(user))  
+      this.userInfo = JSON.parse(JSON.stringify(user))
+
+      if (this.userInfo?.email) {
+        const { data: blob, error } = await this.findUserPhotoInBucket(this.userInfo.email)
+        if (error) this.userInfo.photo = undefined
+        if (blob) {
+
+          const reader = new FileReader()
+          reader.readAsDataURL(blob)
+          reader.onload = function () {
+            const base64data = reader.result
+            if (this.userInfo) this.userInfo.photo = base64data || undefined
+          }
+        }
+      }
+    },
+    // 가입 한 모든 유저 반환 ()
+    async getAllUsers () {
+      const { data: { users }, error } = await sb.auth.admin.listUsers()
+      if (error) throw error
+      return users
     },
 
     // 로그아웃
@@ -122,7 +169,9 @@ export const userAuthStore: any = defineStore({
         const msgList = [
           { m: 'Invalid login credentials', txt: '이메일 또는 비밀번호를 잘못 입력했습니다. 입력하신 내용을 다시 확인해주세요.'},
           { m: 'JWT expired', txt: '세션이 만료되어 로그인 페이지로 이동합니다.'},
-          { m: 'invalid JWT', txt: '세션이 만료되어 로그인 페이지로 이동합니다.'}
+          { m: 'invalid JWT', txt: '세션이 만료되어 로그인 페이지로 이동합니다.'},
+          { m: 'User not found', txt: '유저 정보가 없습니다.'},
+          { m: 'Email not confirmed', txt: '회원가입 승인을 하지 않은 계정입니다. 이메일을 확인해주세요.'},
         ]
         const findedItem = msgList.find(item => msg.includes(item.m))
         if (findedItem)  return findedItem.txt
