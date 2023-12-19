@@ -71,7 +71,7 @@ export const userAuthStore: any = defineStore({
       const { data, error } = await sb
         .storage
         .from('avatars')
-        .upload(`public/${email}.png`, decode(base64), {
+        .upload(`${email}.png`, decode(base64), {
           contentType: 'image/png'
         })
       return { data, error }
@@ -81,7 +81,7 @@ export const userAuthStore: any = defineStore({
       const { data, error } = await sb
         .storage
         .from('avatars')
-        .download(`public/${email}.png`)
+        .download(`${email}.png`)
       return { data, error }
     },
     // 사용자 정보 저장
@@ -96,21 +96,15 @@ export const userAuthStore: any = defineStore({
         const { data: blob, error } = await this.findUserPhotoInBucket(this.userInfo.email)
         if (error) this.userInfo.photo = undefined
         if (blob) {
-
+          let base64data
           const reader = new FileReader()
           reader.readAsDataURL(blob)
-          reader.onload = function () {
-            const base64data = reader.result
-            if (this.userInfo) this.userInfo.photo = base64data || undefined
+          reader.onloadend = function () {
+            base64data = reader.result
           }
+          this.userInfo.photo = base64data
         }
       }
-    },
-    // 가입 한 모든 유저 반환 ()
-    async getAllUsers () {
-      const { data: { users }, error } = await sb.auth.admin.listUsers()
-      if (error) throw error
-      return users
     },
 
     // 로그아웃
@@ -191,6 +185,7 @@ export const userAuthStore: any = defineStore({
         cookies.set('refresh_token', refresh_token, '1d')
 
         await this.setUserInfo(access_token)
+        console.log('유저 >', this.userInfo)
       }
     },
     // 세션 유지
@@ -233,6 +228,15 @@ export const userAuthStore: any = defineStore({
       const { data, error } = result
       if (error) throw error
       return { data }
+    },
+
+    // 가입 한 모든 유저 반환 ()
+    async getAllUsers() {
+      const { data: users, error } = await sb
+        .from('profiles')
+        .select()
+      if (error) throw error
+      return users
     }
   }
 

@@ -2,8 +2,8 @@
   <ul class="chat-bubble-wrap" :class="{ '-me': props.isMe }" >
     <li class="chat-bubble-user-info">
       <img 
-        v-if="props.userImg" 
-        :src="props.userImg" 
+        v-if="props.userPhoto" 
+        :src="props.userPhoto" 
         :alt="`photo_${userEmail}`"
       >
     </li>
@@ -24,7 +24,7 @@ export interface Props {
   createdAt?: string
   userEmail?: string
   userName?: string
-  userImg?: string
+  userPhoto?: string
 }
 const props = withDefaults(defineProps<Props>(), {
   useUserInfo: false,
@@ -33,7 +33,7 @@ const props = withDefaults(defineProps<Props>(), {
   createdAt: '',
   userEmail: '',
   userName: '',
-  userImg: ''
+  userPhoto: ''
 })
 
 const dateSimple = (date: string) => {

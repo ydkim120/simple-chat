@@ -1,5 +1,6 @@
 <template>
   <div class="chat-main -page-wrap">
+    <ChatHeaderSearch />
     <!-- <ChatSideNav class="side-nav" /> -->
     <div class="chat-main-contents">
       <router-view />
@@ -9,6 +10,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import ChatHeaderSearch from '@/components/ChatHeaderSearch.vue'
 // import ChatSideNav from '@/components/ChatSideNav.vue'
 // import { chatStore } from '@/store/Chat.store'
 
@@ -35,5 +37,6 @@ const init = async() => {
 
 .chat-main-contents {
   width: calc(100% - var(--side-nav-width));
+  margin-left: var(--side-nav-width);
 }
 </style>
