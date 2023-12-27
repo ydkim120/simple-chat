@@ -18,6 +18,9 @@ import PanelMenu from 'primevue/panelmenu'
 import Editor from 'primevue/editor'
 import AutoComplete from 'primevue/autocomplete'
 import FileUpload from 'primevue/fileupload'
+import ConfirmDialog from 'primevue/confirmdialog'
+import Dialog from 'primevue/dialog'
+import Skeleton from 'primevue/skeleton'
 
 const pinia = createPinia()
 
@@ -33,7 +36,9 @@ createApp(App)
   .component('Editor', Editor)
   .component('AutoComplete', AutoComplete)
   .component('FileUpload', FileUpload)
-  // .component('ConfirmDialog', ConfirmDialog)
+  .component('ConfirmDialog', ConfirmDialog)
+  .component('Dialog', Dialog)
+  .component('Skeleton', Skeleton)
   .mount('#app')
 
 

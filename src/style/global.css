@@ -35,6 +35,7 @@
   --side-nav-z-index: 50;
 
   --side-nav-width: 300px;
+  --header-height: 80px;
 
   /* theme */
   --primary: var(--lemon-green);
@@ -112,6 +113,12 @@ textarea {
     color: var(--main-red);
     height: 100%;
   }
+}
+
+.button-area {
+  display: flex;
+  gap: var(--gap-xs);
+  justify-content: center;
 }
 
 /* button */

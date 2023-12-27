@@ -6,6 +6,11 @@
   &:focus {
     box-shadow: none;
   }
+  &.p-button-secondary {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+    color: var(--white);
+  }
 }
 
 /* Input Text */

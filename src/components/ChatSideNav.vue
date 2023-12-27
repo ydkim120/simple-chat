@@ -5,8 +5,12 @@
       class="chat-side-nav -menu-info"
     />
     <ul class="chat-side-nav -user-info">
-      <li>유저 정보</li>
-      <li>
+      <li
+        class="chat-side-nav-link"
+        @click="router.push({ name: 'chat-user-info' })">
+          유저 정보
+      </li>
+      <li class="chat-side-nav-link">
         <Button @click="handleLogout" label="로그아웃" />
       </li>
     </ul>
@@ -93,6 +97,7 @@ const sideNavList = ref([
     display: flex;
     flex-direction: column;
     gap:var(--gap-s);
+    .chat-side-nav-link { cursor: pointer;}
   }
 }
 </style>

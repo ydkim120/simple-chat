@@ -120,11 +120,11 @@ export const userAuthStore: any = defineStore({
       // this.message = "";
     },
 
-    // 비밀번호 업데이트
-    async updatePasswordHandler (newPassword: string) {
+    // 비밀번호 변경
+    async updateUserInfo (payload) {
       try {
         const data = await sb.auth.updateUser({
-          password: newPassword,
+          ...payload
         })
 
         if (data?.error) throw data.error
@@ -152,12 +152,12 @@ export const userAuthStore: any = defineStore({
         if (nullValueLabel) return `${nullValueLabel}은(는) 필수입니다.`
       }
 
-      if (status) {
-        const messageByStatus = {
-          422: '비밀번호는 최소 6자리 이상으로 설정해주세요.'
-        }[status]
-        if (messageByStatus) return `${messageByStatus}`
-      }
+      // if (status) {
+      //   const messageByStatus = {
+      //     422: '비밀번호는 최소 6자리 이상으로 설정해주세요.'
+      //   }[status]
+      //   if (messageByStatus) return `${messageByStatus}`
+      // }
 
       const messageBySupabaseAuth = () => {
         const msgList = [
@@ -166,6 +166,8 @@ export const userAuthStore: any = defineStore({
           { m: 'invalid JWT', txt: '세션이 만료되어 로그인 페이지로 이동합니다.'},
           { m: 'User not found', txt: '유저 정보가 없습니다.'},
           { m: 'Email not confirmed', txt: '회원가입 승인을 하지 않은 계정입니다. 이메일을 확인해주세요.'},
+          { m: 'Password should be at least', txt: '비밀번호는 최소 6자리 이상으로 설정해주세요.'},
+          { m: 'New password should be different from the old password', txt: '현재 비밀번호와 동일합니다. '},
         ]
         const findedItem = msgList.find(item => msg.includes(item.m))
         if (findedItem)  return findedItem.txt

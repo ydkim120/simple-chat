@@ -68,7 +68,7 @@
             <Password 
               class="register-form-input"
               v-model="password" 
-              placeholder="password를 입력하세요."
+              placeholder="비밀번호를 입력하세요."
               @keypress.enter.native="handleRegisterUser()"
               :feedback="false"
               toggleMask
@@ -226,9 +226,10 @@ const customBase64Uploader = async (event) => {
       overflow: hidden;
       width: 150px;
       height: 150px;
+      background-color: var(--light-gray);
       .user-icon {
         font-size: 100px;
-        color: var(--disable);
+        color: var(--white);
         z-index: 1;
       }
     }

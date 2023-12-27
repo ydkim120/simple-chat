@@ -39,10 +39,12 @@ const init = async() => {
   top: 0;
   left: 0;
   right: 0;
+  z-index: var(--header-z-index);
 }
 
 .chat-main-contents {
   width: calc(100% - var(--side-nav-width));
+  margin-top: var(--header-height);
   margin-left: var(--side-nav-width);
   border-radius: 20px 0 0 0;
   height: calc(100vh - 60px);
