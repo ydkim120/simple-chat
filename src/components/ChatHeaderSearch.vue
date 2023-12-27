@@ -85,10 +85,14 @@ watch(selectedUser, (val) => {
   display: flex;
   justify-content: space-around;
   padding: var(--gap-xs);
-  background-color: var(--main-green2);
+  background-color: var(--secondary);
   .search-user-input { width: 800px; }
-  .search-user-option {
-    padding: var(--gap-s);
-  }
+}
+.search-user-option {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--gap-s);
+  .search-user-option-email { color: var(--light-gray);}
 }
 </style>

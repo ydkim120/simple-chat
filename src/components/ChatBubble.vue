@@ -59,7 +59,7 @@ const dateSimple = (date: string) => {
     align-self: flex-start;
     padding: 10px;
     gap: var(--gap-xs);
-    background-color: var(--main-green4);
+    background-color: var(--lightest-gray);
     border-radius: 15px;
     &::before,
     &::after {
@@ -71,12 +71,12 @@ const dateSimple = (date: string) => {
 
     &:not(.-me)::before {
       border-bottom-right-radius: 10px;
-      border-left: 1rem solid var(--main-green4);
+      border-left: 1rem solid var(--lightest-gray);
       left: -0.35rem;
       /* transform: translate(0, -0.1rem); */
     }
     &:not(.-me)::after {
-      background-color: #fff;
+      background-color: var(--background-color);
       border-bottom-right-radius: 50%;
       left: 20px;
       transform: translate(-30px, -2px);
@@ -85,16 +85,15 @@ const dateSimple = (date: string) => {
 
     &.-me {
       align-self: flex-end;
-      background-color: var(--main-green1);
-      color: #fff;
+      background-color: var(--primary);
       &::before {
         border-bottom-left-radius: 10px;
-        border-right: 1rem solid var(--main-green1);
+        border-right: 1rem solid var(--primary);
         right: -0.35rem;
         /* transform: translate(0, -0.1rem); */
       }
       &::after {
-        background-color: #fff;
+        background-color: var(--background-color);
         border-bottom-left-radius: 50%;
         right: -40px;
         transform: translate(-30px, -1px);

@@ -1,121 +1,123 @@
 <template>
-  <div class="register-form" v-loading="loginLoading">
-    <h3>이메일로 회원가입</h3>
-    <template v-if="!isPassed" >
-      <div class="register-form-photo">
-        <FileUpload
-          name="demo[]"
-          url=""
-          accept="image/*"
-          custom-upload
-          @select="customBase64Uploader"
-          @clear="userPhoto = undefined"
-          class="register-form-photo-uploader"
-        >
-          <template #header="{ chooseCallback, clearCallback }">
-            <Button
-              :icon="`pi ${userPhoto ? 'pi-pencil' : 'pi-images'}`" 
-              size="small"
-              rounded
-              outlined
-              :label="userPhoto ? 'Edit' : 'Add'"
-              @click="chooseCallback()"
-            />
-            <Button
-              v-if="userPhoto"
-              @click="clearCallback()" 
-              icon="pi pi-times" 
-              rounded
-              outlined
-              severity="danger"
-            />
-          </template>
-          <template #content>
-            <div class="user-photo-wrap">
-              <img
-                v-if="userPhoto"
-                :src="userPhoto || ''"
-                :alt="'profilePhoto'"
-              />
-              <span v-else class="default-photo">
-                <i class="pi pi-user user-icon" />
-              </span>
-            </div>
-          </template>
-        </FileUpload>
-      </div>
-      <ul class="register-form-input-list">
-        <li>
-          <p class="register-form-field">
-            <span class="-required">Email</span>
-          </p>
-          <InputText
-            class="register-form-input"
-            v-model="email"
-            type="text"
-            placeholder="이메일을 입력하세요."
-            @blur="() => { 
-              if (email) email = email.trim() 
-            }"
-            @keypress.enter.native="handleRegisterUser()"
-          />
-        </li>
-        <li>
-          <p class="register-form-field">
-            <span class="-required">비밀번호</span>
-          </p>
-          <Password 
-            class="register-form-input"
-            v-model="password" 
-            placeholder="password를 입력하세요."
-            @keypress.enter.native="handleRegisterUser()"
-            :feedback="false"
-            toggleMask
-          />
-        </li>
-        <li>
-          <p class="register-form-field">
-            <span class="-required">닉네임</span>
-          </p>
-          <InputText
-            class="register-form-input"
-            v-model="userName"
-            type="text"
-            placeholder="닉네임을 입력하세요."
-            @blur="() => { 
-              if (userName) userName = userName.trim() 
-            }"
-            @keypress.enter.native="handleRegisterUser()"
-          />
-        </li>
-      </ul>
-      <Button @click="handleRegisterUser" label="회원가입 승인 메일 보내기" />
-      <ul class="banner-list">
-        <li>
-          계정이 이미 있으신가요?&nbsp;
-          <router-link
-            :to="{ name: 'login-user' }"
-            class="banner-link"
+  <div class="register-user-wrap">
+    <div class="register-form" v-loading="loginLoading">
+      <h3>이메일로 회원가입</h3>
+      <template v-if="!isPassed" >
+        <div class="register-form-photo">
+          <FileUpload
+            name="demo[]"
+            url=""
+            accept="image/*"
+            custom-upload
+            @select="customBase64Uploader"
+            @clear="userPhoto = undefined"
+            class="register-form-photo-uploader"
           >
-            로그인
-          </router-link>
-        </li>
-      </ul>
-    </template>
-    <template v-else >
-      <InlineMessage
-        class="success-send-email"
-        severity="success"
-      >
-        회원가입 승인 링크가 이메일로 전송되었습니다.
-      </InlineMessage>
-      <router-link
-        :to="{ name: 'login-user' }"
-        class="banner-link"
-      >
-        로그인 하러 가기
-      </router-link>
-    </template>
+            <template #header="{ chooseCallback, clearCallback }">
+              <Button
+                :icon="`pi ${userPhoto ? 'pi-pencil' : 'pi-images'}`" 
+                size="small"
+                rounded
+                outlined
+                :label="userPhoto ? 'Edit' : 'Add'"
+                @click="chooseCallback()"
+              />
+              <Button
+                v-if="userPhoto"
+                @click="clearCallback()" 
+                icon="pi pi-times" 
+                rounded
+                outlined
+                severity="danger"
+              />
+            </template>
+            <template #content>
+              <div class="user-photo-wrap">
+                <img
+                  v-if="userPhoto"
+                  :src="userPhoto || ''"
+                  :alt="'profilePhoto'"
+                />
+                <span v-else class="default-photo">
+                  <i class="pi pi-user user-icon" />
+                </span>
+              </div>
+            </template>
+          </FileUpload>
+        </div>
+        <ul class="register-form-input-list">
+          <li>
+            <p class="register-form-field">
+              <span class="-required">Email</span>
+            </p>
+            <InputText
+              class="register-form-input"
+              v-model="email"
+              type="text"
+              placeholder="이메일을 입력하세요."
+              @blur="() => { 
+                if (email) email = email.trim() 
+              }"
+              @keypress.enter.native="handleRegisterUser()"
+            />
+          </li>
+          <li>
+            <p class="register-form-field">
+              <span class="-required">비밀번호</span>
+            </p>
+            <Password 
+              class="register-form-input"
+              v-model="password" 
+              placeholder="password를 입력하세요."
+              @keypress.enter.native="handleRegisterUser()"
+              :feedback="false"
+              toggleMask
+            />
+          </li>
+          <li>
+            <p class="register-form-field">
+              <span class="-required">닉네임</span>
+            </p>
+            <InputText
+              class="register-form-input"
+              v-model="userName"
+              type="text"
+              placeholder="닉네임을 입력하세요."
+              @blur="() => { 
+                if (userName) userName = userName.trim() 
+              }"
+              @keypress.enter.native="handleRegisterUser()"
+            />
+          </li>
+        </ul>
+        <Button @click="handleRegisterUser" label="회원가입 승인 메일 보내기" />
+        <ul class="banner-list">
+          <li>
+            계정이 이미 있으신가요?&nbsp;
+            <router-link
+              :to="{ name: 'login-user' }"
+              class="banner-link"
+            >
+              로그인
+            </router-link>
+          </li>
+        </ul>
+      </template>
+      <template v-else >
+        <InlineMessage
+          class="success-send-email"
+          severity="success"
+        >
+          회원가입 승인 링크가 이메일로 전송되었습니다.
+        </InlineMessage>
+        <router-link
+          :to="{ name: 'login-user' }"
+          class="banner-link"
+        >
+          로그인 하러 가기
+        </router-link>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -179,15 +181,21 @@ const customBase64Uploader = async (event) => {
 </script>
 
 <style scoped>
+.register-user-wrap {
+  position: absolute;
+}
 .register-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px 40px;
-  margin: 50vh auto;
   box-shadow: 0 4px 20px 0 rgba(224, 224, 224, 0.7);
   width: 500px;
-  transform: translate(0, -50%);
+  transform: translate(-50%, -50%);
+  background-color: var(--lightest-gray);
 
   .register-form-photo {
     margin: 40px auto 0;
@@ -250,7 +258,7 @@ const customBase64Uploader = async (event) => {
     display: flex;
     justify-content: center;
     margin-top: var(--gap-s);
-    color: var(--light-gray);
+    color: var(--text-color);
   }
   .banner-link { 
     font-weight: bold; 

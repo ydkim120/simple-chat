@@ -16,9 +16,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/store/Auth.store'
 
 const store = userAuthStore()
+const router = useRouter()
 
 const handleLogout = async () => {
   const done = confirm('로그아웃 하시겠습니까?')
@@ -34,8 +36,11 @@ const handleLogout = async () => {
 
 const sideNavList = ref([
   {
-    label: '홈',
-    icon: 'pi pi-home',
+    label: 'DM',
+    icon: 'pi pi-comments',
+    command: () => {
+      router.push({ name: 'chat-list' })
+    }
   },
   {
     label: 'Cloud',
@@ -82,18 +87,12 @@ const sideNavList = ref([
   flex-direction: column;
   justify-content: space-between;
   padding: 40px 30px;
-  background-color: var(--main-green2);
+  background-color: var(--secondary);
   color: var(--white);
   .chat-side-nav {
     display: flex;
     flex-direction: column;
     gap:var(--gap-s);
-    &::ng-deep .p-panelmenu-header {
-      & .p-panelmenu-header-content {
-        background: transparent;
-      }
-      .p-panelmenu-header-action { padding: 0; }
-    }
   }
 }
 </style>

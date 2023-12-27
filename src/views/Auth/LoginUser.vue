@@ -1,33 +1,35 @@
 <template>
-  <div class="login-form">
-    <h3>Email 로그인</h3>
-    <div class="login-form-input-wrap">
-      <InputText
-        v-model="email"
-        type="text"
-        placeholder="이메일"
-        @blur="() => { if(email) email = email.trim() }"
-        @keypress.enter.native="handleLoginEmail()"
-      />
-      <Password
-        v-model="password"
-        placeholder="비밀번호"
-        @keypress.enter.native="handleLoginEmail()"
-        :feedback="false"
-        toggleMask
-      />
+  <div class="login-user-wrap">
+    <div class="login-form">
+      <h3>Email 로그인</h3>
+      <div class="login-form-input-wrap">
+        <InputText
+          v-model="email"
+          type="text"
+          placeholder="이메일"
+          @blur="() => { if(email) email = email.trim() }"
+          @keypress.enter.native="handleLoginEmail()"
+        />
+        <Password
+          v-model="password"
+          placeholder="비밀번호"
+          @keypress.enter.native="handleLoginEmail()"
+          :feedback="false"
+          toggleMask
+        />
+      </div>
+      <Button @click="handleLoginEmail" label="로그인" />
+      <ul class="banner-list">
+        <li>
+          <router-link 
+            :to="{ name: 'register-user'}"
+            class="banner-link"
+          >
+            회원가입
+          </router-link>
+        </li>
+      </ul>
     </div>
-    <Button @click="handleLoginEmail" label="로그인" />
-    <ul class="banner-list">
-      <li>
-        <router-link 
-          :to="{ name: 'register-user'}"
-          class="banner-link"
-        >
-          회원가입
-        </router-link>
-      </li>
-    </ul>
   </div>
 </template>
 
@@ -71,15 +73,21 @@ const handleLoginEmail = async () => {
 </script>
 
 <style scoped>
+.login-user-wrap {
+  position: absolute;
+}
 .login-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px 40px;
-  margin: 50vh auto;
   box-shadow: 0 4px 20px 0 rgba(224, 224, 224, 0.7);
   width: 500px;
-  transform: translate(0, -50%);
+  transform: translate(-50%, -50%);
+  background-color: var(--lightest-gray);
 
   .login-form-input-wrap {
     display: flex;
@@ -95,7 +103,8 @@ const handleLoginEmail = async () => {
     margin-top: var(--gap-s);
     color: var(--light-gray);
     .banner-link { 
-      font-weight: bold; 
+      font-weight: bold;
+      color: var(--text-color);
       &:hover { text-decoration: underline; }
     }
   }

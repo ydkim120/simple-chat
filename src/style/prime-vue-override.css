@@ -1,3 +1,52 @@
-:root {
-  --primary-color: var(--main-green1);
+/* 버튼 */
+.p-button {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--text-color);
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+/* Input Text */
+.p-inputtext {
+  &:focus { box-shadow: none; }
+}
+
+/* Pannel Menu */
+.p-panelmenu {
+  .p-panelmenu-header {
+    & .p-panelmenu-header-content {
+      background: transparent;
+      border: none;
+    }
+
+    .p-panelmenu-header-action {
+      color: var(--white);
+    }
+  }
+  .p-panelmenu-content { 
+    background: transparent;
+    border: none;
+    color: var(--white);
+    .p-menuitem {
+      * { color: var(--white); }
+      &.p-focus {
+        * {
+          color: var(--primary);
+          background-color: transparent;
+          font-weight: bold;
+        }
+      }
+      .p-menuitem-content {
+        color: var(--white);
+        &:hover {
+          background-color: transparent;
+        }
+      }
+      .p-menuitem-link { 
+        color: var(--white);
+      }
+    }
+  }
 }
