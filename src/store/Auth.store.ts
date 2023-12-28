@@ -46,8 +46,12 @@ export const userAuthStore: any = defineStore({
     async registerUser (registerForm: registerUserType) {
      try {
        if (registerForm.user_photo) {
-         const { data, error } = await this.userPhotoUpload(registerForm.user_photo, registerForm.email)
-         if (error) return { data, error }
+         const { data, error } = await this.registerUserPhoto(registerForm.user_photo, registerForm.email)
+         if (error) throw error
+         else {
+           await this.setUserPhotoInfo ()
+           return { data }
+         }
        }
 
        const result = await sb.auth.signUp({
@@ -64,8 +68,9 @@ export const userAuthStore: any = defineStore({
        return result
      } catch (error) { throw error }
     },
-    // 사용자 프로필 사진 버킷에 업로드
-    async userPhotoUpload (photo: string, email: string) {
+    // 사용자 프로필 사진
+    // 프로필 사진 등록
+    async registerUserPhoto (photo: string, email: string) {
       const base64 = photo.split('base64,')[1]
 
       const { data, error } = await sb
@@ -74,7 +79,31 @@ export const userAuthStore: any = defineStore({
         .upload(`${email}.png`, decode(base64), {
           contentType: 'image/png'
         })
-      return { data, error }
+      if (error) throw error
+      else return { data, error }
+
+    },
+    // 프로필 사진 버킷에 업데이트 (변경 또는 삭제)
+    async updateUserPhoto (photo: string, email: string) {
+      const base64 = photo ? photo.split('base64,')[1] : ''
+
+      const { data, error } = base64
+        ? await sb
+          .storage
+          .from('avatars')
+          .update(`${email}.png`, decode(base64), {
+            contentType: 'image/png'
+          })
+        : await sb
+          .storage
+          .from('avatars')
+          .remove([`${email}.png`])
+
+      if (error) throw error
+      else {
+        await this.setUserPhotoInfo()
+        return { data, error }
+      }
     },
     // 버킷에서 사용자 프로필 사진 파일 검색
     async findUserPhotoInBucket (email: string) {
@@ -82,6 +111,7 @@ export const userAuthStore: any = defineStore({
         .storage
         .from('avatars')
         .download(`${email}.png`)
+      debugger
       return { data, error }
     },
     // 사용자 정보 저장
@@ -93,18 +123,34 @@ export const userAuthStore: any = defineStore({
       this.userInfo = JSON.parse(JSON.stringify(user))
 
       if (this.userInfo?.email) {
-        const { data: blob, error } = await this.findUserPhotoInBucket(this.userInfo.email)
-        if (error) this.userInfo.photo = undefined
-        if (blob) {
-          let base64data
-          const reader = new FileReader()
-          reader.readAsDataURL(blob)
-          reader.onloadend = function () {
-            base64data = reader.result
-          }
-          this.userInfo.photo = base64data
-        }
+        await this.setUserPhotoInfo()
       }
+    },
+    // 사용자 정보 > 프로필 사진 정보 업데이트
+    async setUserPhotoInfo () {
+      if (!this.userInfo?.email) return
+      const { data: blob, error } = await this.findUserPhotoInBucket(this.userInfo.email)
+      if (error) this.userInfo.photo = undefined
+      if (blob) {
+        const getFile = async (file: Blob) => {
+          const reader = new FileReader()
+          reader.readAsDataURL(file)
+          let result: string | ArrayBuffer | null = ''
+          await new Promise<void>(resolve => {
+            reader.onload = function () {
+              result = reader.result
+              resolve()
+            }
+            reader.onerror = function (error) {
+              console.log('Error: ', error)
+              resolve()
+            }
+          })
+          return result
+        }
+        let base64data = await getFile(blob)
+        this.userInfo.photo = base64data
+      } else this.userInfo.photo = undefined
     },
 
     // 로그아웃

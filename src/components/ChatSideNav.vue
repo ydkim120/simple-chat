@@ -7,8 +7,20 @@
     <ul class="chat-side-nav -user-info">
       <li
         class="chat-side-nav-link"
-        @click="router.push({ name: 'chat-user-info' })">
-          유저 정보
+        @click="router.push({ name: 'chat-user-info' })"
+      >
+        <UserProfilePhoto 
+          :src="store.userInfo && store.userInfo.photo ? store.userInfo.photo : ''"
+          width="80px"
+          height="80px"
+          empty-icon-font-size="50px"
+        />
+      </li>
+      <li
+        class="chat-side-nav-link"
+        @click="router.push({ name: 'chat-user-info' })"
+      >
+        유저 정보
       </li>
       <li class="chat-side-nav-link">
         <Button @click="handleLogout" label="로그아웃" />
@@ -19,12 +31,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/store/Auth.store'
+import { userInfoType } from '@/@types'
+import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
 
 const store = userAuthStore()
 const router = useRouter()
+
+const userInfoData = ref<userInfoType | null>(null)
+
+onMounted(() => {
+  const userInfo = JSON.parse(JSON.stringify(store.userInfo))
+  if (userInfo) {
+    userInfoData.value = userInfo
+  }
+})
 
 const handleLogout = async () => {
   const done = confirm('로그아웃 하시겠습니까?')
@@ -90,14 +113,20 @@ const sideNavList = ref([
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 40px 30px;
+  padding: calc(var(--header-height) + 40px) 30px 60px;
   background-color: var(--secondary);
   color: var(--white);
   .chat-side-nav {
     display: flex;
     flex-direction: column;
     gap:var(--gap-s);
-    .chat-side-nav-link { cursor: pointer;}
+    &.-user-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .chat-side-nav-link { cursor: pointer; }
+    & > li { text-align: center; margin: 0 auto; }
   }
 }
 </style>

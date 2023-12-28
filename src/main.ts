@@ -21,6 +21,7 @@ import FileUpload from 'primevue/fileupload'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Dialog from 'primevue/dialog'
 import Skeleton from 'primevue/skeleton'
+import Chip from 'primevue/chip'
 
 const pinia = createPinia()
 
@@ -39,6 +40,7 @@ createApp(App)
   .component('ConfirmDialog', ConfirmDialog)
   .component('Dialog', Dialog)
   .component('Skeleton', Skeleton)
+  .component('Chip', Chip)
   .mount('#app')
 
 

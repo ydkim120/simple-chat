@@ -18,12 +18,21 @@
             :src="slotProps.option.user_photo"
             style="width: 18px"
           />
-          <span>{{ slotProps.option.user_name }}</span>
-          <small>{{ slotProps.option.user_email }}</small>
+          <Chip 
+            v-if="slotProps.option.id === authStore.userInfo.id" 
+            label="나와의 채팅" 
+          />
+          <span class="search-user-option-name">{{ slotProps.option.user_name }}</span>
+          <small class="search-user-option-email">{{ slotProps.option.user_email }}</small>
+        </div>
+      </template>
+      <template #empty>
+        <div class="search-user-option">
+          해당하는 사용자가 없습니다.
         </div>
       </template>
     </AutoComplete>
-         teset <img v-if="authStore.userInfo" :src="authStore.userInfo.photo" alt="">
+         <!-- teset <img v-if="authStore.userInfo" :src="authStore.userInfo.photo" alt=""> -->
   </div>
 </template>
 
@@ -31,6 +40,7 @@
 import { ref, onMounted, watch } from "vue"
 import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/store/Auth.store'
+import { chatStore as chatDataStore } from '@/store/Chat.store'
 
 type profileType = {
   id: string | undefined
@@ -41,11 +51,11 @@ type profileType = {
 
 const router = useRouter()
 const authStore = userAuthStore()
+const chatStore = chatDataStore()
 
 onMounted(async () => {
   const allUsersData = await authStore.getAllUsers() || []
   allUser.value = allUsersData
-  console.log('userInfo >>>', authStore.userInfo.photo)
 })
 
 const allUser = ref([])
@@ -67,13 +77,23 @@ const search = (event: Event) => {
   }, 250)
 }
 
-watch(selectedUser, (val) => {
+watch(selectedUser, async (val) => {
   if (typeof val === 'object' && val?.id) {
+    let channelId
+    let findedChannel = await chatStore.getChannelList([val.id])
+
+    if (findedChannel?.length) channelId = findedChannel[0].channel_id
+    else {
+      const result = await chatStore.createChannel([val.id])
+      channelId = result?.channel.id
+      debugger
+    }
+
     debugger
     router.push({
       name: 'chat-detail',
       params: {
-        id: val?.id
+        id: channelId
       }
     })
   }
@@ -84,7 +104,8 @@ watch(selectedUser, (val) => {
 .chat-header-search {
   display: flex;
   justify-content: space-around;
-  padding: var(--gap-xs);
+  align-items: center;
+  height: var(--header-height);
   background-color: var(--secondary);
   .search-user-input { width: 800px; }
 }
