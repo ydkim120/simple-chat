@@ -42,7 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
   position: relative;
   overflow: hidden;
   border-radius: 50%;
-  border: 1px solid var(--disable);
+  border: 1px solid #aaa;
   cursor: pointer;
   background-color: var(--white);
   &.-center { margin: 0 auto;}

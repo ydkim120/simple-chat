@@ -43,6 +43,7 @@ const init = async() => {
 }
 
 .chat-main-contents {
+  overflow: hidden;
   width: calc(100% - var(--side-nav-width));
   margin-top: var(--header-height);
   margin-left: var(--side-nav-width);

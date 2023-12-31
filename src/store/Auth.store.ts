@@ -285,6 +285,18 @@ export const userAuthStore: any = defineStore({
         .select()
       if (error) throw error
       return users
+    },
+    // 유저 ID에 해당하는 유저 정보 반환
+    async getUsersByUserIds (userIdList : string[]) {
+      if (!userIdList?.length) return []
+      const filterTxt = userIdList.reduce((acc, cur) => acc ? `${acc}, id.eq.${cur}` : `id.eq.${cur}`, '')
+
+      const { data: users, error } = await sb
+        .from('profiles')
+        .select()
+        .or(filterTxt)
+      if (error) throw error
+      return users
     }
   }
 

@@ -20,6 +20,15 @@ export type userInfoType = {
   photo?: string | undefined
 }
 
+export type profileType = {
+  id: string | undefined
+  user_email: string | undefined
+  user_name?: string | undefined
+  user_photo?: string | undefined
+  created_at?: string
+  updated_at?: string | undefined
+}
+
 export type sessionObjType = {
   access_token: string
   expires_at?: number | undefined

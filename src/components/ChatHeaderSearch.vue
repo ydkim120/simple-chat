@@ -1,7 +1,9 @@
 <!-- 사용자 검색 -->
 <template>
   <div class="chat-header-search">
-    {{ selectedUser }}
+    <div class="logo-wrap">
+      Simple Messenger
+    </div>
     <AutoComplete
       v-model="selectedUser"
       optionLabel="user_name"
@@ -69,7 +71,7 @@ const search = (event: Event) => {
     } else {
       filteredUsers.value = allUser.value.filter((user: profileType) => {
         return (
-          user?.user_name.toLowerCase().startsWith(event.query.toLowerCase()) 
+          user?.user_name?.toLowerCase().startsWith(event.query.toLowerCase()) 
           || user?.user_email.toLowerCase().startsWith(event.query.toLowerCase())
         )
       })
@@ -79,16 +81,22 @@ const search = (event: Event) => {
 
 watch(selectedUser, async (val) => {
   if (typeof val === 'object' && val?.id) {
-    let channelId
-    let findedChannel = await chatStore.getChannelList([val.id])
+    await goToChannelDetail (val.id)
+  }
+})
 
+const goToChannelDetail = async (partnerId: string) => {
+  try {
+    let channelId
+    let findedChannel = await chatStore.getChannelList([partnerId])
+    
     if (findedChannel?.length) channelId = findedChannel[0].channel_id
     else {
-      const result = await chatStore.createChannel([val.id])
+      const result = await chatStore.createChannel([partnerId])
       channelId = result?.channel.id
       debugger
     }
-
+    
     debugger
     router.push({
       name: 'chat-detail',
@@ -96,24 +104,36 @@ watch(selectedUser, async (val) => {
         id: channelId
       }
     })
+  } catch (error) {
+    const errorMessage = chatStore.getErrorMessage(error)
+    if (errorMessage) alert(errorMessage)
   }
-})
+}
 </script>
 
 <style scoped>
 .chat-header-search {
   display: flex;
-  justify-content: space-around;
+  /* justify-content: space-around; */
   align-items: center;
   height: var(--header-height);
   background-color: var(--secondary);
   .search-user-input { width: 800px; }
+}
+.logo-wrap {
+  padding: 0 30px;
+  font-weight: 900;
+  color: var(--primary);
+  text-transform: uppercase;
+  font-size: 1.5rem;
+  width: var(--side-nav-width);
+  line-height: 35px;
 }
 .search-user-option {
   display: flex;
   align-items: center;
   gap: var(--gap);
   padding: var(--gap-s);
-  .search-user-option-email { color: var(--light-gray);}
+  /* .search-user-option-email { color: var(--light-gray);} */
 }
 </style>

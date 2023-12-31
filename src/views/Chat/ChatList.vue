@@ -1,32 +1,94 @@
 <template>
   <div class="chat-room-list-wrap">
     <ul class="chat-room-list">
-      <li class="chat-room-item" @click="routeToDetail">
-        채팅방 목록쓰
+      <li
+        class="chat-room-item"
+        v-for="ch in channelList"
+        :key="ch.channel_id"
+        @click="routeToDetail(ch.channel_id)"
+      >
+        <Skeleton v-if="isGetChannelList"></Skeleton>
+        <template v-else>
+          <UserProfilePhoto 
+            width="50px"
+            height="50px"
+            empty-icon-font-size="35px"
+          />
+          <div class="channel-content">
+            <b>{{ ch.usersNameTxt }}</b>
+          </div>
+        </template>
       </li>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { chatStore as cStore } from '@/store/Chat.store'
+import { userAuthStore } from '@/store/Auth.store'
+import { singleChannelData, profileType } from '@/@types'
+import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
 
 const router = useRouter()
+const chatStore = cStore()
+const authStore = userAuthStore()
+const myInfo = authStore.userInfo
 
-const routeToDetail = () => {
+const channelList = ref<singleChannelData[]>([])
+
+// 로딩
+const isGetChannelList = ref(true)
+
+const getRecentChannel = async () => {
+  try {
+    // const channelId = router.params.id
+    const result = await chatStore.getChannelList()
+    channelList.value = result.map(c => ({
+      ...c,
+      usersNameTxt: c.user_list.filter((user: profileType) => user.id !== myInfo.id)
+        .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, '')
+    }))
+    console.log('채팅 리스트 >>>', result)
+
+  } catch (error) {
+    const errorMessage = chatStore.getErrorMessage(error)
+    if (errorMessage) alert(errorMessage)
+  } finally {
+    isGetChannelList.value = false
+  }
+}
+
+const routeToDetail = (channel_id: string) => {
   router.push({ 
     name: 'chat-detail',
     params: {
-      id: 'ydkim'
+      id: channel_id
     }
   })
 }
+
+onMounted(async () => {
+  // if (authStore.userInfo) userEmail.value = authStore.userInfo.email
+  await getRecentChannel()
+
+})
 </script>
 
 <style scoped>
 .chat-room-list {
-  & .chat-room-item {
-
+  /* padding: var(--gap-s); */
+  .chat-room-item {
+    padding: var(--gap-s) var(--gap-m);
+    display: flex;
+    gap: var(--gap-m);
+    align-items: center;
+    & + & { border-top: 1px solid var(--light-gray);}
+    &:hover { 
+      background-color: var(--lightest-gray);
+      cursor: pointer;
+    }
   }
 }
 </style>

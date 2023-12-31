@@ -183,6 +183,9 @@ const customBase64Uploader = async (event) => {
 <style scoped>
 .register-user-wrap {
   position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: var(--white);
 }
 .register-form {
   position: fixed;

@@ -16,15 +16,17 @@ export const chatStore: any = defineStore({
 
   },
   actions: {
-    async getAllChats (from: number, to: number) {
+    // 메신저
+    async getAllChatsByChannelId(channelId: string, { from = 1, to = 10 }) {
       const userId = authStore?.userInfo?.id
       console.log('@ userId: ', userId)
       if (!userId) throw new Error('사용자 정보가 없습니다.')
 
       const { data: chatList, error } = await sb
-        .from('chats')
-        .select()
-        .range(from, to)
+        .from('channels')
+        .select('*, chats (*)')
+        .eq('channel_id', channelId)
+        .range(to, from)
         .order('created_at', { ascending: true })
         // .stream(primaryKey: ['id'])
         // .map((maps) => maps
@@ -66,6 +68,60 @@ export const chatStore: any = defineStore({
       if (error) throw error
       return true
     },
+
+    // 채널
+    /**
+     * 채널 목록 조회
+     * 기본: 로그인 한 유저가 포함된 채널 목록 조회
+     * @param {Array} userIdList 상대방 유저가 있는 경우, 상대방 유저 ID를 담은 배열
+     * @param {Number} from, to 찾는 범위 설정
+     */
+    async getChannelList(userIdList = [], to = 0 , from = 10) {
+      console.log('@@@ >>> ', authStore.userInfo)
+      const { data: channels, error } = await sb
+        .from('channels')
+        .select()
+        .contains('user_id_list', [authStore?.userInfo?.id, ...userIdList])
+        .order('updated_at', { ascending: true })
+        .range(to, from)
+      // .stream(primaryKey: ['id'])
+      // .map((maps) => maps
+      //   .map((map) => Message.fromMap(map: map, myUserId: myUserId))
+      //   .toList());
+      if (error) throw error
+      return channels
+    },
+    // 채널 생성
+    async createChannel(userIdList = [], userInfo: userInfoType = authStore?.userInfo) {
+      const offset = new Date().getTimezoneOffset() * 60000
+      const today = new Date(Date.now() - offset)
+      const user_id_list = [...userIdList, userInfo?.id]
+      const user_list = await authStore.getUsersByUserIds (user_id_list)
+      debugger
+
+      const payload = {
+        created_at: today,
+        updated_at: today,
+        user_id_list,
+        user_list,
+        summary: ''
+      }
+      const { data, error } = await sb
+        .from('channels')
+        .insert(payload)
+      if (error) throw error
+      return data
+    },
+    // // 채널 찾기 (참여 유저 ID 목록에 따라)
+    // async getChannelListByUserIdList (userIdList = []) {
+    //   const { data: channel, error } = await sb
+    //     .from('channels')
+    //     .select()
+    //     .contains('user_id_list', [authStore?.userInfo?.id, ...userIdList])
+
+    //   if (error) throw error
+    //   return channel
+    // },
 
     getErrorMessage(error: Error | undefined) {
       if (!error) return ''
