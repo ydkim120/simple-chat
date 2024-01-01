@@ -1,13 +1,29 @@
 <template>
   <ul class="chat-bubble-wrap" :class="{ '-me': props.isMe }" >
-    <li class="chat-bubble-user-info">
-      <img 
-        v-if="props.userPhoto" 
-        :src="props.userPhoto" 
-        :alt="`photo_${userEmail}`"
-      >
+    <li 
+      v-if="!isMe"
+      class="chat-bubble-user-info" 
+    >
+      <UserProfilePhoto 
+        width="60px"
+        height="60px"
+        empty-icon-font-size="35px"
+        :src="props.userPhoto"
+      />
     </li>
-    <li class="chat-bubble-content" :class="{'-me': props.isMe }" v-html="content" />
+    <li>
+      <b 
+        v-if="!isMe"
+        class="chat-bubble-user-name" 
+      >
+        {{ props.userName }}
+      </b>
+      <div 
+        class="chat-bubble-content" 
+        :class="{ '-me': props.isMe }" 
+        v-html="content" 
+      />
+    </li>
     <li class="chat-bubble-time-wrap">
       <small class="chat-bubble-time">{{ dateSimple(props.createdAt) }}</small>
     </li>
@@ -16,6 +32,7 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
+import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
 
 export interface Props {
   useUserInfo: boolean,
@@ -51,52 +68,58 @@ const dateSimple = (date: string) => {
     flex-direction: row-reverse;
     justify-content: flex-end;
   }
-  .chat-bubble-user-info {
-
+  .chat-bubble-user-info { 
+    margin-right: var(--gap-s);
+  }
+  .chat-bubble-user-name {
+    display: block;
+    margin-bottom: 5px;
   }
   .chat-bubble-content {
+    display: block;
     position: relative;
     align-self: flex-start;
-    padding: 10px;
+    padding: 15px;
     gap: var(--gap-xs);
-    background-color: var(--lightest-gray);
+    background-color: var(--light-gray);
     border-radius: 15px;
     &::before,
     &::after {
       content: '';
       position: absolute;
-      bottom: -3px;
+      top: -3px;
       height: 20px;
     }
 
     &:not(.-me)::before {
-      border-bottom-right-radius: 10px;
-      border-left: 1rem solid var(--lightest-gray);
+      border-top-right-radius: 10px;
+      border-left: 1rem solid var(--light-gray);
       left: -0.35rem;
       /* transform: translate(0, -0.1rem); */
     }
     &:not(.-me)::after {
       background-color: var(--background-color);
-      border-bottom-right-radius: 50%;
+      border-top-right-radius: 50%;
       left: 20px;
-      transform: translate(-30px, -2px);
+      transform: translate(-30px, 0px);
       width: 10px;
+      /* transform: scaleY(-1); */
     }
 
     &.-me {
       align-self: flex-end;
       background-color: var(--primary);
       &::before {
-        border-bottom-left-radius: 10px;
+        border-top-left-radius: 10px;
         border-right: 1rem solid var(--primary);
         right: -0.35rem;
         /* transform: translate(0, -0.1rem); */
       }
       &::after {
         background-color: var(--background-color);
-        border-bottom-left-radius: 50%;
+        border-top-left-radius: 50%;
         right: -40px;
-        transform: translate(-30px, -1px);
+        transform: translate(-30px, 0px);
         width: 10px;
       }
     }
@@ -108,6 +131,7 @@ const dateSimple = (date: string) => {
     .chat-bubble-time {
       position: absolute;
       bottom: 0;
+      color: var(--dark-gray);
     }
   }
 }

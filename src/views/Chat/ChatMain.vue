@@ -3,7 +3,9 @@
     <ChatHeaderSearch class="chat-main-header" />
     <ChatSideNav class="chat-main-side-nav" />
     <div class="chat-main-contents">
-      <router-view />
+      <div class="chat-main-contents-inner">
+        <router-view />
+      </div>
     </div>
   </div>
 </template>
@@ -25,6 +27,7 @@ const init = async() => {
 </script>
 
 <style scoped>
+.chat-main { position: relative; }
 .chat-main-side-nav {
   position: fixed;
   top: 0;
@@ -43,12 +46,15 @@ const init = async() => {
 }
 
 .chat-main-contents {
-  overflow: hidden;
   width: calc(100% - var(--side-nav-width));
-  margin-top: var(--header-height);
+  padding-top: var(--header-height);
   margin-left: var(--side-nav-width);
-  border-radius: 20px 0 0 0;
-  height: calc(100vh - 60px);
-  background-color: var(--background-color);
+  height: 100vh;
+  .chat-main-contents-inner {
+    overflow: hidden;
+    height: calc(100vh - 80px);
+    background-color: var(--background-color);
+    border-radius: 20px 0 0 0;
+  }
 }
 </style>
