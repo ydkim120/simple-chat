@@ -2,10 +2,15 @@ import { defineStore } from 'pinia'
 import { userAuthStore } from './Auth.store'
 import { supabase as sb } from '@/supabase'
 import { SystemError, userInfoType } from '@/@types'
-import { v4 as uuidv4 } from 'uuid'
+// import { v4 as uuidv4 } from 'uuid'
 
 const authStore = userAuthStore()
-const uuid = uuidv4()
+// const uuid = uuidv4()
+
+type newChatType = {
+  channel_id: string 
+  content: string
+}
 
 export const chatStore: any = defineStore({
   id: 'chat',
@@ -23,10 +28,11 @@ export const chatStore: any = defineStore({
       if (!userId) throw new Error('사용자 정보가 없습니다.')
 
       const { data: chatList, error } = await sb
-        .from('channels')
-        .select('*, chats (*)')
+        .from('chats')
+        // .from('channels')
+        .select()
         .eq('channel_id', channelId)
-        .range(to, from)
+        .range(from, to)
         .order('created_at', { ascending: true })
         // .stream(primaryKey: ['id'])
         // .map((maps) => maps
@@ -48,19 +54,21 @@ export const chatStore: any = defineStore({
       //   .select('*, users: chats_users!inner(user:profiles(email))')
       //   .in('id', [chatIds?.map(chat => chat.id)])
     },
-    async createNewChat(content = '', userInfo: userInfoType = authStore?.userInfo) {
+    async createNewChat(data: newChatType, userInfo: userInfoType = authStore?.userInfo) {
+      const { content, channel_id } = data
       const { id: userId, email, user_metadata } = userInfo
 
       const offset = new Date().getTimezoneOffset() * 60000
       const today = new Date(Date.now() - offset)
 
       const payload = {
-        id:uuid,
+        // id:uuid,
         user_id: userId,
         content,
         created_at: today,
         user_email: email,
-        user_name: user_metadata?.user_name
+        user_name: user_metadata?.user_name,
+        channel_id: channel_id
       }
       const { error } = await sb
         .from('chats')
@@ -76,14 +84,14 @@ export const chatStore: any = defineStore({
      * @param {Array} userIdList 상대방 유저가 있는 경우, 상대방 유저 ID를 담은 배열
      * @param {Number} from, to 찾는 범위 설정
      */
-    async getChannelList(userIdList = [], to = 0 , from = 10) {
+    async getChannelList(userIdList = [], from = 0 , to = 10) {
       console.log('@@@ >>> ', authStore.userInfo)
       const { data: channels, error } = await sb
         .from('channels')
         .select()
         .contains('user_id_list', [authStore?.userInfo?.id, ...userIdList])
         .order('updated_at', { ascending: true })
-        .range(to, from)
+        .range(from, to)
       // .stream(primaryKey: ['id'])
       // .map((maps) => maps
       //   .map((map) => Message.fromMap(map: map, myUserId: myUserId))
@@ -97,7 +105,6 @@ export const chatStore: any = defineStore({
       const today = new Date(Date.now() - offset)
       const user_id_list = [...userIdList, userInfo?.id]
       const user_list = await authStore.getUsersByUserIds (user_id_list)
-      debugger
 
       const payload = {
         created_at: today,
