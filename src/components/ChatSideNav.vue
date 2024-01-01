@@ -20,7 +20,8 @@
         class="chat-side-nav-link"
         @click="router.push({ name: 'chat-user-info' })"
       >
-        유저 정보
+        {{ userName ? userName : '유저 정보' }}
+        <i class="pi pi-cog" />
       </li>
       <li class="chat-side-nav-link">
         <Button @click="handleLogout" label="로그아웃" />
@@ -41,11 +42,13 @@ const store = userAuthStore()
 const router = useRouter()
 
 const userInfoData = ref<userInfoType | null>(null)
+const userName = ref('')
 
 onMounted(() => {
   const userInfo = JSON.parse(JSON.stringify(store.userInfo))
   if (userInfo) {
     userInfoData.value = userInfo
+    userName.value = userInfo?.user_metadata?.user_name
   }
 })
 
@@ -68,43 +71,43 @@ const sideNavList = ref([
     command: () => {
       router.push({ name: 'chat-list' })
     }
-  },
-  {
-    label: 'Cloud',
-    icon: 'pi pi-cloud',
-    items: [
-      {
-        label: 'Upload',
-        icon: 'pi pi-cloud-upload'
-      },
-      {
-        label: 'Download',
-        icon: 'pi pi-cloud-download'
-      },
-      {
-        label: 'Sync',
-        icon: 'pi pi-refresh'
-      }
-    ]
-  },
-  {
-    label: 'Devices',
-    icon: 'pi pi-desktop',
-    items: [
-      {
-        label: 'Phone',
-        icon: 'pi pi-mobile'
-      },
-      {
-        label: 'Desktop',
-        icon: 'pi pi-desktop'
-      },
-      {
-        label: 'Tablet',
-        icon: 'pi pi-tablet'
-      }
-    ]
   }
+  // {
+  //   label: 'Cloud',
+  //   icon: 'pi pi-cloud',
+  //   items: [
+  //     {
+  //       label: 'Upload',
+  //       icon: 'pi pi-cloud-upload'
+  //     },
+  //     {
+  //       label: 'Download',
+  //       icon: 'pi pi-cloud-download'
+  //     },
+  //     {
+  //       label: 'Sync',
+  //       icon: 'pi pi-refresh'
+  //     }
+  //   ]
+  // },
+  // {
+  //   label: 'Devices',
+  //   icon: 'pi pi-desktop',
+  //   items: [
+  //     {
+  //       label: 'Phone',
+  //       icon: 'pi pi-mobile'
+  //     },
+  //     {
+  //       label: 'Desktop',
+  //       icon: 'pi pi-desktop'
+  //     },
+  //     {
+  //       label: 'Tablet',
+  //       icon: 'pi pi-tablet'
+  //     }
+  //   ]
+  // }
 ])
 </script>
 
@@ -125,7 +128,12 @@ const sideNavList = ref([
       flex-direction: column;
       justify-content: center;
     }
-    .chat-side-nav-link { cursor: pointer; }
+    .chat-side-nav-link { 
+      display: flex; 
+      align-items: center; 
+      gap: 10px; 
+      cursor: pointer; 
+    }
     & > li { text-align: center; margin: 0 auto; }
   }
 }

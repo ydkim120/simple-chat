@@ -1,8 +1,15 @@
 <!-- 사용자 검색 -->
 <template>
-  <div class="chat-header-search">
+  <header class="chat-header-search">
     <div class="logo-wrap">
-      Simple Messenger
+      <a 
+        @click="() => router.push({
+          name: 'chat-list'
+        })"
+      >
+       <i class="pi pi-send" style="font-size: 1.2rem"></i>
+        Simple Messenger
+      </a>
     </div>
     <AutoComplete
       v-model="selectedUser"
@@ -35,7 +42,7 @@
       </template>
     </AutoComplete>
          <!-- teset <img v-if="authStore.userInfo" :src="authStore.userInfo.photo" alt=""> -->
-  </div>
+  </header>
 </template>
 
 <script setup lang="ts">
@@ -125,9 +132,10 @@ const goToChannelDetail = async (partnerId: string) => {
   font-weight: 900;
   color: var(--primary);
   text-transform: uppercase;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   width: var(--side-nav-width);
   line-height: 35px;
+  > a { cursor: pointer; }
 }
 .search-user-option {
   display: flex;

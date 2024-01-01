@@ -1,6 +1,9 @@
 <template>
   <div class="chat-room-list-wrap">
-    <ul class="chat-room-list">
+    <ul 
+      class="chat-room-list" 
+      v-if="channelList.length"
+    >
       <li
         class="chat-room-item"
         v-for="ch in channelList"
@@ -20,6 +23,12 @@
         </template>
       </li>
     </ul>
+    <div 
+      v-else
+      class="empty-contents"
+    >
+      대화 중인 상대가 없습니다.<br>사용자를 검색해 Messenger를 시작해보세요.
+    </div>
   </div>
 </template>
 
@@ -50,7 +59,7 @@ const getRecentChannel = async () => {
       usersNameTxt: c.user_list.filter((user: profileType) => user.id !== myInfo.id)
         .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, '')
     }))
-    console.log('채팅 리스트 >>>', result)
+    console.log('채널 리스트 >>>', result)
 
   } catch (error) {
     const errorMessage = chatStore.getErrorMessage(error)
@@ -90,5 +99,15 @@ onMounted(async () => {
       cursor: pointer;
     }
   }
+}
+.empty-contents {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #aaa;
+  font-size: 18px;
+  text-align: center;
+  line-height: 1.5;
 }
 </style>

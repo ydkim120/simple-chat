@@ -58,7 +58,7 @@ body {
   * { box-sizing: border-box; }
 }
 body {
-  overflow: auto;
+  /* overflow: auto; */
   min-height: 100vh;
   width: 100%;
 }
@@ -98,6 +98,33 @@ textarea {
   border: 1px solid #dbdbdb;
   border-radius: var(--border-radius);
   color: var(--main-black);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  /* 세로축 스크롤바 길이 */
+  height: 5px;
+  /* 가로축 스크롤바 길이 */
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: var(--light-gray);
+}
+
+::-webkit-scrollbar-button {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-button:start {
+  border-radius: 5px 5px 0 0;
+}
+
+::-webkit-scrollbar-button:end {
+  /* Bottom, Right 방향의 이동버튼 */
+  border-radius: 0 0 5px 5px;
+
 }
 
 .-page-wrap { width: 100%; }
