@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "base64-arraybuffer": "^1.0.2",
     "dayjs": "^1.11.10",
     "pinia": "^2.1.7",
     "primeicons": "^6.0.1",
