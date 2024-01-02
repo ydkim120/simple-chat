@@ -75,6 +75,7 @@ const chatStore = cStore()
 const channelId = ref<string | string[]>('')
 const newMsg = ref('')
 const chatList = ref<singleChatData[]>([])
+const lastChat = ref('') // 마지막 채팅
 const userEmail = ref('')
 
 const chatEditorRef = ref(null)
@@ -100,6 +101,7 @@ onMounted(async () => {
       async () => {
         console.log('chats changed !!!!!!')
         await getAllChats()
+        await chatStore.updateChannelSummary(channelId.value, lastChat.value)
       }
     )
   console.log('chatsWatcher.value: ', chatsWatcher.value)
@@ -120,6 +122,7 @@ const getAllChats = async () => {
     const result = await chatStore.getAllChatsByChannelId(channelId.value, { from: 0, to: 100 })
     chatList.value = result
     console.log('채팅 리스트 >>>', result)
+    if (result?.length) lastChat.value = result[result.length - 1].content
 
     await nextTick()
     scrollToBottom(chatListWrapRef.value)

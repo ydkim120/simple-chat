@@ -40,29 +40,32 @@ npm run dev
 
 ## 🔎 I Learned
 
-작업 기간 동안 배운점:
-* 1회차 (2023.12.06 ~ 2023.12.29)
-  * `Vite` + `Vue3` + `Typescript` 프로젝트 세팅
-  * `Supabase` 사용법 (간단한 PostgreSQL 문법)
-  * Vue3에서 새로 추가된 함수 기반 API인 `Composition API` 살펴보기 *(아직 프로젝트 규모가 작고, 눈이 `Options API`에 익숙해져 있는 터라 큰 장점을 느끼지 못함.)*
-  * Typescript 랑 친해지는 중 🫶
-  
-* 2회차 (2024.1.2 ~ )
-  * 진행 중...
+1. 1회차 (2023.12.06 ~ 2023.12.29)
+    * `Vite` + `Vue3` + `Typescript` 프로젝트 세팅
+    * `Supabase` 사용법 (간단한 PostgreSQL 문법)
+      - 인증 구현
+      - 데이터 CRUD
+      - RealTime 기능을 활용, Postgres Changes을 통해 실시간 데이터 가져오도록 적용
+      - Storage(Bucket)를 이용한 File 관리
+    * Vue3에서 새로 추가된 함수 기반 API인 `Composition API` 살펴보기 *(아직 프로젝트 규모가 작고, 눈이 `Options API`에 익숙해져 있는 터라 큰 장점을 느끼지 못함.)*
+    * Typescript 랑 친해지는 중 🫶
+
+2. 2회차 (2024.1.2 ~ )
+    * 진행 중...
   
 
 <!-- ## Learning Objectives -->
 
 
 ## 📚 Homework
-* 1회차 (2023.12.06 ~ 2023.12.29)
-  * PostgreSQL 좀 더 깊게 알아보기
-  * 기능 보완
-    - 로딩 구현
-    - 새로운 메신저 수신 시 알람 기능
-    - 그룹 채팅 기능
-    - 예약 메세지 기능
-    - 라우팅 변경 시 세션 유지 검토
+1. 1회차 (2023.12.06 ~ 2023.12.29)
+    * PostgreSQL 좀 더 깊게 알아보기
+    * 기능 보완
+      - 로딩 구현
+      - 새로운 메신저 수신 시 알람 기능
+      - 그룹 채팅 기능
+      - 예약 메세지 기능
+      - 라우팅 변경 시 세션 유지 검토
 
 
 <!-- ## Helpful Links -->

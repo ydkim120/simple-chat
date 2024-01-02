@@ -119,6 +119,17 @@ export const chatStore: any = defineStore({
       if (error) throw error
       return data
     },
+    // 채널 summary 업데이트
+    async updateChannelSummary(channel_id = '', summary = ''){
+      const { data, error } = await sb
+        .from('channels')
+        .update({
+          summary
+        })
+        .eq('channel_id', channel_id)
+      if (error) throw error
+      return data
+    },
     // // 채널 찾기 (참여 유저 ID 목록에 따라)
     // async getChannelListByUserIdList (userIdList = []) {
     //   const { data: channel, error } = await sb

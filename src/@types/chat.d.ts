@@ -16,5 +16,6 @@ export interface singleChannelData {
   user_list: any[],
   summary?: string | undefined,
 
-  usersNameTxt: string
+  usersNameTxt: string,
+  summaryTxt: string
 }

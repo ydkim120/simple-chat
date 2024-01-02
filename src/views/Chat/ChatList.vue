@@ -18,7 +18,8 @@
             empty-icon-font-size="35px"
           />
           <div class="channel-content">
-            <b>{{ ch.usersNameTxt }}</b>
+            <b class="channel-userName">{{ ch.usersNameTxt }}</b>
+            <div class="channel-summary" v-text="ch.summaryTxt" />
           </div>
         </template>
       </li>
@@ -33,8 +34,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { supabase as sb } from '@/supabase'
 import { chatStore as cStore } from '@/store/Chat.store'
 import { userAuthStore } from '@/store/Auth.store'
 import { singleChannelData, profileType } from '@/@types'
@@ -47,6 +49,8 @@ const myInfo = authStore.userInfo
 
 const channelList = ref<singleChannelData[]>([])
 
+const channelListWatcher = ref<any>(null)
+
 // 로딩
 const isGetChannelList = ref(true)
 
@@ -57,7 +61,8 @@ const getRecentChannel = async () => {
     channelList.value = result.map(c => ({
       ...c,
       usersNameTxt: c.user_list.filter((user: profileType) => user.id !== myInfo.id)
-        .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, '')
+        .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, ''),
+      summaryTxt: c?.summary?.replace(/<[^>]*>?/g, '') || ''
     }))
     console.log('채널 리스트 >>>', result)
 
@@ -82,15 +87,26 @@ onMounted(async () => {
   // if (authStore.userInfo) userEmail.value = authStore.userInfo.email
   await getRecentChannel()
 
+  channelListWatcher.value = sb.channel('public:channels')
+    .on(
+      'postgres_changes',
+       { event: '*', schema: 'public', table: 'channels' },
+       async () => {
+        await getRecentChannel()
+       }
+    )
+  channelListWatcher.value.subscribe()
 })
+
+onUnmounted(() => channelListWatcher.value?.unsubscribe())
 </script>
 
 <style scoped>
 .chat-room-list {
   /* padding: var(--gap-s); */
   .chat-room-item {
-    padding: var(--gap-s) var(--gap-m);
     display: flex;
+    padding: var(--gap-s) var(--gap-m);
     gap: var(--gap-m);
     align-items: center;
     & + & { border-top: 1px solid var(--light-gray);}
@@ -109,5 +125,21 @@ onMounted(async () => {
   font-size: 18px;
   text-align: center;
   line-height: 1.5;
+}
+.channel-content {
+  display: flex;
+  flex-direction: column;
+  padding: var(--gap-xs) 0;
+  .channel-userName { font-size: 16px; }
+  .channel-summary {
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-block;
+    color: var(--dark-gray);
+    margin-top: var(--gap-xs);
+    text-overflow : ellipsis;
+    max-width: calc(100vw - 500px);
+    /* white-space: nowrap; */
+  }
 }
 </style>
