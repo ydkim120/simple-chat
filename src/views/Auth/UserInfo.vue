@@ -10,7 +10,7 @@
         @clear="userPhoto = undefined"
         class="user-info-photo-uploader"
       >
-        <template #header="{ chooseCallback, clearCallback }">
+        <template #header="{ chooseCallback }">
           <Button
             size="small"
             rounded
@@ -179,10 +179,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, getCurrentInstance } from 'vue'
 import { userAuthStore } from '@/store/Auth.store'
 import { userInfoType } from '@/@types'
 import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
+
+const instance = getCurrentInstance()
 
 const authStore = userAuthStore()
 
@@ -196,7 +198,9 @@ const newPassword = ref('')
 const newPasswordRe = ref('')
 const userName = ref('')
 const userPhoto = ref()
+const userPhotoFile = ref<File | null>(null)
 const userPhotoPreview = ref()
+const userPhotoPreviewFile = ref<File | null>(null)
 
 onMounted( () => {
   setUserInfo()
@@ -268,6 +272,7 @@ const customBase64Uploader = async (event) => {
   reader.onloadend = function () {
     const base64data = reader.result
     userPhotoPreview.value = base64data || undefined
+    userPhotoPreviewFile.value = file
     activePreviewPhoto.value = true
   }
 }
@@ -286,24 +291,27 @@ const saveProfilePhoto = async () => {
     let result
     if (!userPhoto.value) {
       const { data } = await authStore.registerUserPhoto(
-        isDeleted ? '' : userPhotoPreview.value,
+        userPhotoPreviewFile.value,
         email.value
       )
       result = data
     } else {
       const { data } = await authStore.updateUserPhoto(
-        isDeleted ? '' : userPhotoPreview.value, 
+        isDeleted ? '' : userPhotoPreviewFile.value, 
         email.value
       )
       result = data
     }
 
     if (result) {
+      isDeleted ? alert('프로필 사진을 삭제했습니다.') : alert('프로필 사진을 변경했습니다.')
       activePreviewPhoto.value = false
       userPhoto.value = userPhotoPreview.value
+      userPhotoFile.value = userPhotoPreviewFile.value
       userPhotoPreview.value = ''
-      await setUserInfo()
-      return isDeleted ? alert('프로필 사진을 삭제했습니다.') : alert('프로필 사진을 변경했습니다.')
+      userPhotoPreviewFile.value = null
+      setUserInfo()
+      return instance?.proxy?.$forceUpdate()
     }
   } catch (error) {
     const errorMessage = authStore.getErrorMessage(error)

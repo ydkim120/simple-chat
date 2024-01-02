@@ -7,7 +7,7 @@ export type registerUserType = {
   user_name: string
   password: string
   email: string
-  user_photo: string | undefined
+  user_photo: File | null
 }
 
 export type userInfoType = {
@@ -17,7 +17,7 @@ export type userInfoType = {
   phone?: string | undefined
   updated_at?: string | undefined
   user_metadata?: any
-  photo?: string | undefined
+  photo?: string | null
 }
 
 export type profileType = {

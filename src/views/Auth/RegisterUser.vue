@@ -134,6 +134,7 @@ const email = ref('')
 const password = ref('')
 const userName = ref('')
 const userPhoto = ref()
+const userPhotoFile = ref<File | null>(null)
 const isPassed = ref(false)
 
 const handleRegisterUser = async () => {
@@ -152,7 +153,7 @@ const handleRegisterUser = async () => {
       email: email.value,
       password: password.value,
       user_name: userName.value,
-      user_photo: userPhoto.value
+      user_photo: userPhotoFile.value
     })
     console.log('data:: ', data)
     if (!error) {
@@ -175,6 +176,7 @@ const customBase64Uploader = async (event) => {
   reader.onloadend = function () {
     const base64data = reader.result
     userPhoto.value = base64data || undefined
+    userPhotoFile.value = file
   }
 }
 

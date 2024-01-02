@@ -48,10 +48,6 @@ export const userAuthStore: any = defineStore({
        if (registerForm.user_photo) {
          const { data, error } = await this.registerUserPhoto(registerForm.user_photo, registerForm.email)
          if (error) throw error
-         else {
-           await this.setUserPhotoInfo ()
-           return { data }
-         }
        }
 
        const result = await sb.auth.signUp({
@@ -70,34 +66,46 @@ export const userAuthStore: any = defineStore({
     },
     // 사용자 프로필 사진
     // 프로필 사진 등록
-    async registerUserPhoto (photo: string, email: string) {
-      const base64 = photo.split('base64,')[1]
+    async registerUserPhoto (photo: File, email: string) {
+      // const base64 = photo.split('base64,')[1]
 
       const { data, error } = await sb
         .storage
         .from('avatars')
-        .upload(`${email}.png`, decode(base64), {
-          contentType: 'image/png'
+        // .upload(`${email}_photo`, decode(base64), {
+        //   contentType: 'image/png',
+        //   cacheControl: '3600',
+        //   upsert: true
+        // })
+        .upload(`${email}_photo`, photo, {
+          contentType: 'image/png',
+          cacheControl: '3600',
+          upsert: false
         })
       if (error) throw error
-      else return { data, error }
+      else {
+        await this.setUserPhotoInfo()
+        return { data, error }
+      }
 
     },
     // 프로필 사진 버킷에 업데이트 (변경 또는 삭제)
-    async updateUserPhoto (photo: string, email: string) {
-      const base64 = photo ? photo.split('base64,')[1] : ''
+    async updateUserPhoto (photo: File, email: string) {
+      // const base64 = photo ? photo.split('base64,')[1] : ''
 
-      const { data, error } = base64
-        ? await sb
+      const { data, error } = photo
+        ? await sb // 변경
           .storage
           .from('avatars')
-          .update(`${email}.png`, decode(base64), {
-            contentType: 'image/png'
+          .update(`${email}_photo`, photo, {
+            contentType: 'image/png',
+            cacheControl: '3600',
+            upsert: false
           })
-        : await sb
+        : await sb // 제거
           .storage
           .from('avatars')
-          .remove([`${email}.png`])
+          .remove([`${email}_photo`])
 
       if (error) throw error
       else {
@@ -111,7 +119,6 @@ export const userAuthStore: any = defineStore({
         .storage
         .from('avatars')
         .download(`${email}.png`)
-      debugger
       return { data, error }
     },
     // 사용자 정보 저장
@@ -122,35 +129,58 @@ export const userAuthStore: any = defineStore({
       if (error) this.userInfo = null
       this.userInfo = JSON.parse(JSON.stringify(user))
 
-      if (this.userInfo?.email) {
-        await this.setUserPhotoInfo()
-      }
+      await this.setUserPhotoInfo()
     },
     // 사용자 정보 > 프로필 사진 정보 업데이트
     async setUserPhotoInfo () {
+      console.log('this.userInfo ????? ', this.userInfo)
       if (!this.userInfo?.email) return
-      const { data: blob, error } = await this.findUserPhotoInBucket(this.userInfo.email)
-      if (error) this.userInfo.photo = undefined
-      if (blob) {
-        const getFile = async (file: Blob) => {
-          const reader = new FileReader()
-          reader.readAsDataURL(file)
-          let result: string | ArrayBuffer | null = ''
-          await new Promise<void>(resolve => {
-            reader.onload = function () {
-              result = reader.result
-              resolve()
-            }
-            reader.onerror = function (error) {
-              console.log('Error: ', error)
-              resolve()
-            }
-          })
-          return result
-        }
-        let base64data = await getFile(blob)
-        this.userInfo.photo = base64data
-      } else this.userInfo.photo = undefined
+
+      const { data, error } = await sb
+        .storage
+        .from("avatars")
+        .createSignedUrl(`${this.userInfo?.email}_photo`, 60)
+      if (error) this.userInfo.photo = null
+
+        // .getPublicUrl(`${this.userInfo?.email}_photo`)
+      // const { data: { publicUrl } } = await sb
+      //   .storage
+      //   .from("avatars")
+      //   .getPublicUrl(`${this.userInfo?.email}_photo`)
+
+      // if (publicURLError) throw publicURLError
+
+      this.userInfo.photo = data?.signedUrl || null
+
+      await sb
+        .from("profiles")
+        .update({
+          user_photo: this.userInfo.photo,
+        })
+        .eq('user_email', this.userInfo.email)
+
+      // const { data: blob, error } = await this.findUserPhotoInBucket(this.userInfo.email)
+      // if (error) this.userInfo.photo = undefined
+      // if (blob) {
+      //   const getFile = async (file: Blob) => {
+      //     const reader = new FileReader()
+      //     reader.readAsDataURL(file)
+      //     let result: string | ArrayBuffer | null = ''
+      //     await new Promise<void>(resolve => {
+      //       reader.onload = function () {
+      //         result = reader.result
+      //         resolve()
+      //       }
+      //       reader.onerror = function (error) {
+      //         console.log('Error: ', error)
+      //         resolve()
+      //       }
+      //     })
+      //     return result
+      //   }
+      //   let base64data = await getFile(blob)
+      //   this.userInfo.photo = base64data
+      // } else this.userInfo.photo = undefined
     },
 
     // 로그아웃
@@ -174,6 +204,9 @@ export const userAuthStore: any = defineStore({
         })
 
         if (data?.error) throw data.error
+        
+        const access_token = cookies.get('access_token')
+        this.setUserInfo(access_token)
         return data
       } catch(error) { throw error }
     },
