@@ -99,12 +99,12 @@ const goToChannelDetail = async (partnerId: string) => {
     
     if (findedChannel?.length) channelId = findedChannel[0].channel_id
     else {
-      const result = await chatStore.createChannel([partnerId])
-      channelId = result?.channel.id
-      debugger
+      await chatStore.createChannel([partnerId])
+
+      findedChannel = await chatStore.getChannelList([partnerId])
+      channelId = findedChannel[0].channel_id
     }
     
-    debugger
     router.push({
       name: 'chat-detail',
       params: {
