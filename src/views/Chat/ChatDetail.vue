@@ -91,7 +91,12 @@ onMounted(async () => {
   chatsWatcher.value = sb.channel('public:chats')
     .on(
       'postgres_changes',
-      { event: '*', schema: 'public', table: 'chats' },
+      { 
+        event: '*', 
+        schema: 'public', 
+        table: 'chats',
+        filter: `channel_id=eq.${channelId.value}`
+      },
       async () => {
         console.log('chats changed !!!!!!')
         await getAllChats()
