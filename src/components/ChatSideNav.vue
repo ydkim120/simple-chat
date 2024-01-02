@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/store/Auth.store'
 import { userInfoType } from '@/@types'
@@ -43,6 +43,15 @@ const router = useRouter()
 
 const userInfoData = ref<userInfoType | null>(null)
 const userName = ref('')
+
+watch(() => store.userInfo, (val) => {
+  const userInfo = JSON.parse(JSON.stringify(val))
+  if (userInfo) {
+    userInfoData.value = userInfo
+    userName.value = userInfo?.user_metadata?.user_name
+  }
+},
+{ deep: true })
 
 onMounted(() => {
   const userInfo = JSON.parse(JSON.stringify(store.userInfo))
