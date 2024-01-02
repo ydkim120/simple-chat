@@ -55,14 +55,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { chatStore as cStore } from '@/store/Chat.store'
+import { supabase as sb } from '@/supabase'
+import { singleChatData } from '@/@types'
 
-import ChatBubble from '@/components/ChatBubble.vue'
+import { chatStore as cStore } from '@/store/Chat.store'
 import { userAuthStore } from '@/store/Auth.store'
 
-import { singleChatData } from '@/@types'
+import ChatBubble from '@/components/ChatBubble.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -80,11 +81,27 @@ const chatEditorRef = ref(null)
 const chatListWrapRef = ref<HTMLElement | null>(null)
 const chatListRef = ref<HTMLElement | null>(null)
 
+const chatsWatcher = ref<any>(null)
+
 onMounted(async () => {
   if (authStore.userInfo) userEmail.value = authStore.userInfo.email
   if (route.params) channelId.value = route.params.id
   await getAllChats()
+
+  chatsWatcher.value = sb.channel('public:chats')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'chats' },
+      async () => {
+        console.log('chats changed !!!!!!')
+        await getAllChats()
+      }
+    )
+  console.log('chatsWatcher.value: ', chatsWatcher.value)
+  chatsWatcher.value.subscribe()
 })
+
+onUnmounted(() => chatsWatcher.value?.unsubscribe())
 
 const scrollToBottom = (element: HTMLElement | null) =>
   element?.scrollTo({ behavior: "smooth", top: chatListRef?.value?.offsetHeight })
