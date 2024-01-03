@@ -12,13 +12,31 @@
       >
         <Skeleton v-if="isGetChannelList"></Skeleton>
         <template v-else>
-          <UserProfilePhoto 
-            width="50px"
-            height="50px"
-            empty-icon-font-size="35px"
-          />
+          <ol>
+            <li 
+              v-for="(photo, idx) in ch.userPhotoList" 
+              :key="`userProfilePhoto_${idx}`"
+            >
+              <UserProfilePhoto 
+                :src="photo"
+                width="80px"
+                height="80px"
+                empty-icon-font-size="50px"
+              />
+            </li>
+          </ol>
           <div class="channel-content">
-            <b class="channel-userName">{{ ch.usersNameTxt }}</b>
+            <div class="channel-user-name-wrap">
+              <span
+                v-if="ch.is_me"
+                class="is-me-tag"
+              >
+                나
+              </span>
+              <b class="channel-user-name">
+                {{ ch.usersNameTxt }}
+              </b>
+            </div>
             <div class="channel-summary" v-text="ch.summaryTxt" />
           </div>
         </template>
@@ -40,7 +58,6 @@ import { supabase as sb } from '@/supabase'
 import { chatStore as cStore } from '@/store/Chat.store'
 import { userAuthStore } from '@/store/Auth.store'
 import { singleChannelData, profileType } from '@/@types'
-import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
 
 const router = useRouter()
 const chatStore = cStore()
@@ -140,15 +157,36 @@ onUnmounted(() => channelListWatcher.value?.unsubscribe())
   display: flex;
   flex-direction: column;
   padding: var(--gap-xs) 0;
-  .channel-userName { font-size: 16px; }
+  .channel-user-name-wrap {
+    display: flex;
+    align-items: center;
+    .is-me-tag {
+      display: block;
+      margin-right: var(--gap-xs);
+      width: 25px; 
+      height: 25px; 
+      border-radius: 50%; 
+      background-color: var(--lightest-gray);
+      color: #aaa;
+      line-height: 25px;
+      font-weight: normal;
+      text-align: center;
+    }
+    .channel-user-name { vertical-align: middle; font-size: 16px; }
+  }
   .channel-summary {
+    display: -webkit-box;
     overflow: hidden;
-    white-space: nowrap;
-    display: inline-block;
+    text-overflow : ellipsis;
+    /* white-space: nowrap; */
+    word-break: break-all;
+    line-height: 1.2em;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     color: var(--dark-gray);
     margin-top: var(--gap-xs);
-    text-overflow : ellipsis;
     max-width: calc(100vw - 500px);
+    min-height: 33px;
     /* white-space: nowrap; */
   }
 }

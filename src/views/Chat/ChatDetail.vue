@@ -10,17 +10,17 @@
       >
         <li
           class="chat-item"
-          :class="{ '-me': userEmail === msg.user_email }"
+          :class="{ '-me': myEmail === msg.user_email }"
           v-for="msg in chatList"
           :key="msg.id"
         >
           <ChatBubble
-            :is-me="userEmail === msg.user_email"
+            :is-me="myEmail === msg.user_email"
             :user-mail="msg.user_email"
             :user-name="msg.user_name"
             :content="msg.content"
             :created-at="msg.created_at"
-            :use-user-info="userEmail !== msg.user_email"
+            :use-user-info="myEmail !== msg.user_email"
             :user-photo="msg.user_photo"
           />
         </li>
@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { supabase as sb } from '@/supabase'
 import { singleChatData } from '@/@types'
@@ -76,7 +76,7 @@ const channelId = ref<string | string[]>('')
 const newMsg = ref('')
 const chatList = ref<singleChatData[]>([])
 const lastChat = ref('') // 마지막 채팅
-const userEmail = ref('')
+const myEmail = ref('')
 
 const chatEditorRef = ref(null)
 const chatListWrapRef = ref<HTMLElement | null>(null)
@@ -84,8 +84,15 @@ const chatListRef = ref<HTMLElement | null>(null)
 
 const chatsWatcher = ref<any>(null)
 
+watch(route.params, async (val) => {
+  if (val) {
+    channelId.value = route.params.id
+    await getAllChats()
+  }
+}, { deep: true })
+
 onMounted(async () => {
-  if (authStore.userInfo) userEmail.value = authStore.userInfo.email
+  if (authStore.userInfo) myEmail.value = authStore.userInfo.email
   if (route.params) channelId.value = route.params.id
   await getAllChats()
 
@@ -111,7 +118,7 @@ onMounted(async () => {
 onUnmounted(() => chatsWatcher.value?.unsubscribe())
 
 const scrollToBottom = (element: HTMLElement | null) =>
-  element?.scrollTo({ behavior: "smooth", top: chatListRef?.value?.offsetHeight })
+  element?.scrollTo({ top: chatListRef?.value?.offsetHeight })
 
 const getAllChats = async () => {
   try {

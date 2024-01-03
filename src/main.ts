@@ -23,6 +23,8 @@ import Dialog from 'primevue/dialog'
 import Skeleton from 'primevue/skeleton'
 import Chip from 'primevue/chip'
 
+import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
+
 const pinia = createPinia()
 
 createApp(App)
@@ -41,6 +43,7 @@ createApp(App)
   .component('Dialog', Dialog)
   .component('Skeleton', Skeleton)
   .component('Chip', Chip)
+  .component('UserProfilePhoto', UserProfilePhoto)
   .mount('#app')
 
 

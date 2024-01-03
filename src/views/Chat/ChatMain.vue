@@ -4,7 +4,7 @@
     <ChatSideNav class="chat-main-side-nav" />
     <div class="chat-main-contents">
       <div class="chat-main-contents-inner">
-        <router-view />
+        <router-view :key="$route.fullPath" />
       </div>
     </div>
   </div>

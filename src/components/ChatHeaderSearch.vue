@@ -17,15 +17,17 @@
       class="search-user-input"
       placeholder="사용자 이름 또는 이메일로 검색하세요."
       :suggestions="filteredUsers"
+      :complete-on-focus="true"
       @complete="search"
+      @clear="search"
     >
       <template #option="slotProps">
         <div class="search-user-option">
-          <img
-            v-if="slotProps.option.user_photo"
-            :alt="slotProps.option.user_name"
-            :src="slotProps.option.user_photo"
-            style="width: 18px"
+          <UserProfilePhoto 
+            :src="slotProps.option.user_photo || ''"
+            width="40px"
+            height="40px"
+            empty-icon-font-size="30px"
           />
           <Chip 
             v-if="slotProps.option.id === authStore.userInfo.id" 
@@ -75,11 +77,11 @@ const filteredUsers = ref()
 
 const search = (event: Event) => {
   setTimeout(() => {
-    if (!event?.query?.trim().length) {
+    const inputQuery = event?.query?.trim().toLowerCase()
+    if (!inputQuery) {
       filteredUsers.value = [...allUser.value]
     } else {
       filteredUsers.value = allUser.value.filter((user: profileType) => {
-        const inputQuery = event.query.toLowerCase()
         return (
           // user?.user_name?.toLowerCase().startsWith(event.query.toLowerCase()) 
           // || user?.user_email.toLowerCase().startsWith(event.query.toLowerCase())
@@ -101,7 +103,7 @@ const goToChannelDetail = async (partnerId: string) => {
   try {
     let channelId
     let findedChannel = await chatStore.getChannelList([partnerId])
-    
+
     if (findedChannel?.length) channelId = findedChannel[0].channel_id
     else {
       await chatStore.createChannel([partnerId])
@@ -109,7 +111,7 @@ const goToChannelDetail = async (partnerId: string) => {
       findedChannel = await chatStore.getChannelList([partnerId])
       channelId = findedChannel[0].channel_id
     }
-    
+
     router.push({
       name: 'chat-detail',
       params: {
@@ -145,8 +147,8 @@ const goToChannelDetail = async (partnerId: string) => {
 .search-user-option {
   display: flex;
   align-items: center;
-  gap: var(--gap);
-  padding: var(--gap-s);
+  gap: var(--gap-s);
+  padding: var(--gap-xs) var(--gap-s);
   /* .search-user-option-email { color: var(--light-gray);} */
 }
 </style>

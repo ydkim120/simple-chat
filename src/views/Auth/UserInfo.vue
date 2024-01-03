@@ -182,7 +182,6 @@
 import { ref, onMounted, getCurrentInstance } from 'vue'
 import { userAuthStore } from '@/store/Auth.store'
 import { userInfoType } from '@/@types'
-import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
 
 const instance = getCurrentInstance()
 
@@ -304,13 +303,13 @@ const saveProfilePhoto = async () => {
     }
 
     if (result) {
-      isDeleted ? alert('프로필 사진을 삭제했습니다.') : alert('프로필 사진을 변경했습니다.')
       activePreviewPhoto.value = false
       userPhoto.value = userPhotoPreview.value
       userPhotoFile.value = userPhotoPreviewFile.value
       userPhotoPreview.value = ''
       userPhotoPreviewFile.value = null
       setUserInfo()
+      isDeleted ? alert('프로필 사진을 삭제했습니다.') : alert('프로필 사진을 변경했습니다.')
       return instance?.proxy?.$forceUpdate()
     }
   } catch (error) {
