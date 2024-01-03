@@ -32,7 +32,6 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
 
 export interface Props {
   useUserInfo: boolean,

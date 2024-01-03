@@ -15,7 +15,9 @@ export interface singleChannelData {
   user_id_list: string[]
   user_list: any[],
   summary?: string | undefined,
+  is_me?: boolean, // 나와의 채팅 여부
 
-  usersNameTxt: string,
-  summaryTxt: string
+  usersNameTxt?: string,
+  summaryTxt?: string,
+  userPhotoList?: string[]
 }
