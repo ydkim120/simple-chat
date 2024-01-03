@@ -51,6 +51,8 @@ import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/store/Auth.store'
 import { chatStore as chatDataStore } from '@/store/Chat.store'
 
+import fuzzyStringSearch from '@/utils/FuzzyStringSearch'
+
 type profileType = {
   id: string | undefined
   user_name: string
@@ -74,12 +76,15 @@ const filteredUsers = ref()
 const search = (event: Event) => {
   setTimeout(() => {
     if (!event?.query?.trim().length) {
-      filteredUsers.value = [...allUser.value];
+      filteredUsers.value = [...allUser.value]
     } else {
       filteredUsers.value = allUser.value.filter((user: profileType) => {
+        const inputQuery = event.query.toLowerCase()
         return (
-          user?.user_name?.toLowerCase().startsWith(event.query.toLowerCase()) 
-          || user?.user_email.toLowerCase().startsWith(event.query.toLowerCase())
+          // user?.user_name?.toLowerCase().startsWith(event.query.toLowerCase()) 
+          // || user?.user_email.toLowerCase().startsWith(event.query.toLowerCase())
+          fuzzyStringSearch(inputQuery).test(user?.user_name?.toLowerCase())
+          || fuzzyStringSearch(inputQuery).test(user?.user_name?.toLowerCase())
         )
       })
     }

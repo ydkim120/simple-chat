@@ -58,12 +58,22 @@ const getRecentChannel = async () => {
   try {
     // const channelId = router.params.id
     const result = await chatStore.getChannelList()
-    channelList.value = result.map(c => ({
-      ...c,
-      usersNameTxt: c.user_list.filter((user: profileType) => user.id !== myInfo.id)
-        .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, ''),
-      summaryTxt: c?.summary?.replace(/<[^>]*>?/g, '') || ''
-    }))
+    channelList.value = result.map((c: singleChannelData) => {
+      const isMe = c.is_me
+
+      return {
+        ...c,
+        usersNameTxt: isMe
+          ? myInfo?.user_metadata?.user_name
+          :c.user_list.filter((user: profileType) => user.id !== myInfo.id)
+            .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, ''),
+        summaryTxt: c?.summary?.replace(/<[^>]*>?/g, '') || '',
+        userPhotoList: isMe
+          ? myInfo?.photo
+          : c.user_list.filter((user: profileType) => user.id !== myInfo.id)
+              .map(item => item.user_photo || ''),
+      }
+    })
     console.log('채널 리스트 >>>', result)
 
   } catch (error) {
@@ -106,12 +116,12 @@ onUnmounted(() => channelListWatcher.value?.unsubscribe())
   /* padding: var(--gap-s); */
   .chat-room-item {
     display: flex;
-    padding: var(--gap-s) var(--gap-m);
+    padding: var(--gap-s);
     gap: var(--gap-m);
     align-items: center;
     & + & { border-top: 1px solid var(--light-gray);}
     &:hover { 
-      background-color: var(--lightest-gray);
+      background-color: rgba(0, 0, 0, 0.02);
       cursor: pointer;
     }
   }
