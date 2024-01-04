@@ -1,5 +1,5 @@
 import { createWebHistory, createRouter } from "vue-router"
-import { userAuthStore } from '@/store/Auth.store'
+import { useUserAuthStore } from '@/store/Auth.store'
 import { supabase as sb } from '@/supabase'
 
 
@@ -60,7 +60,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const authStore = userAuthStore()
+  const authStore = useUserAuthStore()
 
   if (to.meta.requiresAuth) {
     const { session } = await authStore.getSession()

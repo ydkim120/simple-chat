@@ -180,12 +180,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, getCurrentInstance } from 'vue'
-import { userAuthStore } from '@/store/Auth.store'
+import { useUserAuthStore } from '@/store/Auth.store'
 import { userInfoType } from '@/@types'
+import { useProfilePhotoStore } from '@/store/ProfilePhoto.store'
 
 const instance = getCurrentInstance()
 
-const authStore = userAuthStore()
+const authStore = useUserAuthStore()
+const photoStore = useProfilePhotoStore()
 
 const isEditUserName = ref(false)
 const activeChangePasswordDialog = ref(false) // 비밀번호 변경 팝업
@@ -289,13 +291,13 @@ const saveProfilePhoto = async () => {
 
     let result
     if (!userPhoto.value) {
-      const { data } = await authStore.registerUserPhoto(
+      const { data } = await photoStore.registerUserPhoto(
         userPhotoPreviewFile.value,
         email.value
       )
       result = data
     } else {
-      const { data } = await authStore.updateUserPhoto(
+      const { data } = await photoStore.updateUserPhoto(
         isDeleted ? '' : userPhotoPreviewFile.value, 
         email.value
       )
@@ -303,6 +305,7 @@ const saveProfilePhoto = async () => {
     }
 
     if (result) {
+      await authStore.setUserPhotoInfo()
       activePreviewPhoto.value = false
       userPhoto.value = userPhotoPreview.value
       userPhotoFile.value = userPhotoPreviewFile.value

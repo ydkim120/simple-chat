@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
-import { userAuthStore } from './Auth.store'
+import { useUserAuthStore } from './Auth.store'
 import { supabase as sb } from '@/supabase'
 import { SystemError, userInfoType } from '@/@types'
 // import { v4 as uuidv4 } from 'uuid'
 
-const authStore = userAuthStore()
+const authStore = useUserAuthStore()
 // const uuid = uuidv4()
 
 type newChatType = {
@@ -12,7 +12,7 @@ type newChatType = {
   content: string
 }
 
-export const chatStore: any = defineStore({
+export const useChatStore: any = defineStore({
   id: 'chat',
   state: () => ({
 
@@ -86,10 +86,12 @@ export const chatStore: any = defineStore({
      */
     async getChannelList(userIdList = [], from = 0 , to = 10) {
       console.log('@@@ >>> ', authStore.userInfo)
+      const user_id_list = [authStore?.userInfo?.id, ...userIdList]
+
       const { data: channels, error } = await sb
         .from('channels')
         .select()
-        .contains('user_id_list', [authStore?.userInfo?.id, ...userIdList])
+        .contains('user_id_list', user_id_list)
         .order('updated_at', { ascending: true })
         .range(from, to)
       // .stream(primaryKey: ['id'])
@@ -97,6 +99,7 @@ export const chatStore: any = defineStore({
       //   .map((map) => Message.fromMap(map: map, myUserId: myUserId))
       //   .toList());
       if (error) throw error
+
       return channels
     },
     // 채널 생성

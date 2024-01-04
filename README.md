@@ -47,7 +47,7 @@ npm run dev
       - 데이터 CRUD
       - RealTime 기능을 활용, Postgres Changes을 통해 실시간 데이터 가져오도록 적용
       - Storage(Bucket)를 이용한 File 관리
-    * Vue3에서 새로 추가된 함수 기반 API인 `Composition API` 살펴보기 *(아직 프로젝트 규모가 작고, 눈이 `Options API`에 익숙해져 있는 터라 큰 장점을 느끼지 못함.)*
+    * Vue3에서 새로 추가된 함수 기반 API인 `Composition API` 살펴보기
     * Typescript 랑 친해지는 중 🫶
 
 2. 2회차 (2024.1.2 ~ )

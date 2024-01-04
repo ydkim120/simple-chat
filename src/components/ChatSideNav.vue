@@ -34,11 +34,10 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { userAuthStore } from '@/store/Auth.store'
+import { useUserAuthStore } from '@/store/Auth.store'
 import { userInfoType } from '@/@types'
-import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
 
-const store = userAuthStore()
+const store = useUserAuthStore()
 const router = useRouter()
 
 const userInfoData = ref<userInfoType | null>(null)

@@ -8,11 +8,11 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { userAuthStore } from '@/store/Auth.store'
+import { useUserAuthStore } from '@/store/Auth.store'
 import { useCookies } from "vue3-cookies"
 // import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
-const store = userAuthStore()
+const store = useUserAuthStore()
 
 const { cookies } = useCookies()
 

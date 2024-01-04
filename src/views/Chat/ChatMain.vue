@@ -14,9 +14,9 @@
 import { onMounted } from 'vue'
 import ChatHeaderSearch from '@/components/ChatHeaderSearch.vue'
 import ChatSideNav from '@/components/ChatSideNav.vue'
-import { chatStore } from '@/store/Chat.store'
+import { useChatStore } from '@/store/Chat.store'
 
-const store = chatStore()
+const store = useChatStore()
 
 onMounted(() => {
   init()

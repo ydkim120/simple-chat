@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import router from '../router'
 import { supabase as sb } from '@/supabase'
-import { useCookies } from "vue3-cookies"
-import { decode } from 'base64-arraybuffer'
-// import { requestLogin, requestRegister } from '../services/auth';
+import { useCookies } from 'vue3-cookies'
+
 import { loginUserType, registerUserType, SystemError, userInfoType,  sessionObjType } from '@/@types'
+
+import { useProfilePhotoStore } from './ProfilePhoto.store'
 
 const { cookies } = useCookies()
 
@@ -13,7 +14,7 @@ interface authState {
   isAuth: boolean
 }
 
-export const userAuthStore: any = defineStore({
+export const useUserAuthStore: any = defineStore({
   id: 'auth',
   state: (): authState => ({
     userInfo: null,
@@ -45,9 +46,11 @@ export const userAuthStore: any = defineStore({
     // 사용자 등록
     async registerUser (registerForm: registerUserType) {
      try {
+       const photoStore = useProfilePhotoStore()
        if (registerForm.user_photo) {
-         const { data, error } = await this.registerUserPhoto(registerForm.user_photo, registerForm.email)
+         const { data, error } = await photoStore.registerUserPhoto(registerForm.user_photo, registerForm.email)
          if (error) throw error
+         if (data) await this.setUserPhotoInfo()
        }
 
        const result = await sb.auth.signUp({
@@ -64,63 +67,6 @@ export const userAuthStore: any = defineStore({
        return result
      } catch (error) { throw error }
     },
-    // 사용자 프로필 사진
-    // 프로필 사진 등록
-    async registerUserPhoto (photo: File, email: string) {
-      // const base64 = photo.split('base64,')[1]
-
-      const { data, error } = await sb
-        .storage
-        .from('avatars')
-        // .upload(`${email}_photo`, decode(base64), {
-        //   contentType: 'image/png',
-        //   cacheControl: '3600',
-        //   upsert: true
-        // })
-        .upload(`${email}_photo`, photo, {
-          contentType: 'image/png',
-          cacheControl: '3600',
-          upsert: false
-        })
-      if (error) throw error
-      else {
-        await this.setUserPhotoInfo()
-        return { data, error }
-      }
-
-    },
-    // 프로필 사진 버킷에 업데이트 (변경 또는 삭제)
-    async updateUserPhoto (photo: File, email: string) {
-      // const base64 = photo ? photo.split('base64,')[1] : ''
-
-      const { data, error } = photo
-        ? await sb // 변경
-          .storage
-          .from('avatars')
-          .update(`${email}_photo`, photo, {
-            contentType: 'image/png',
-            cacheControl: '3600',
-            upsert: false
-          })
-        : await sb // 제거
-          .storage
-          .from('avatars')
-          .remove([`${email}_photo`])
-
-      if (error) throw error
-      else {
-        await this.setUserPhotoInfo()
-        return { data, error }
-      }
-    },
-    // 버킷에서 사용자 프로필 사진 파일 검색
-    async findUserPhotoInBucket (email: string) {
-      const { data, error } = await sb
-        .storage
-        .from('avatars')
-        .download(`${email}.png`)
-      return { data, error }
-    },
     // 사용자 정보 저장
     async setUserInfo(accessToken: string) {
       if (!accessToken) return 
@@ -132,55 +78,24 @@ export const userAuthStore: any = defineStore({
       await this.setUserPhotoInfo()
     },
     // 사용자 정보 > 프로필 사진 정보 업데이트
-    async setUserPhotoInfo () {
+    async setUserPhotoInfo() {
       console.log('this.userInfo ????? ', this.userInfo)
       if (!this.userInfo?.email) return
 
       const { data, error } = await sb
         .storage
-        .from("avatars")
-        .createSignedUrl(`${this.userInfo?.email}_photo`, 60)
+        .from('avatars')
+        .createSignedUrl(`${this.userInfo?.email}_photo`, 31536000)
       if (error) this.userInfo.photo = null
-
-        // .getPublicUrl(`${this.userInfo?.email}_photo`)
-      // const { data: { publicUrl } } = await sb
-      //   .storage
-      //   .from("avatars")
-      //   .getPublicUrl(`${this.userInfo?.email}_photo`)
-
-      // if (publicURLError) throw publicURLError
 
       this.userInfo.photo = data?.signedUrl || null
 
       await sb
-        .from("profiles")
+        .from('profiles')
         .update({
           user_photo: this.userInfo.photo,
         })
         .eq('user_email', this.userInfo.email)
-
-      // const { data: blob, error } = await this.findUserPhotoInBucket(this.userInfo.email)
-      // if (error) this.userInfo.photo = undefined
-      // if (blob) {
-      //   const getFile = async (file: Blob) => {
-      //     const reader = new FileReader()
-      //     reader.readAsDataURL(file)
-      //     let result: string | ArrayBuffer | null = ''
-      //     await new Promise<void>(resolve => {
-      //       reader.onload = function () {
-      //         result = reader.result
-      //         resolve()
-      //       }
-      //       reader.onerror = function (error) {
-      //         console.log('Error: ', error)
-      //         resolve()
-      //       }
-      //     })
-      //     return result
-      //   }
-      //   let base64data = await getFile(blob)
-      //   this.userInfo.photo = base64data
-      // } else this.userInfo.photo = undefined
     },
 
     // 로그아웃
@@ -197,14 +112,14 @@ export const userAuthStore: any = defineStore({
     },
 
     // 비밀번호 변경
-    async updateUserInfo (payload) {
+    async updateUserInfo (payload: any) {
       try {
         const data = await sb.auth.updateUser({
           ...payload
         })
 
         if (data?.error) throw data.error
-        
+
         const access_token = cookies.get('access_token')
         this.setUserInfo(access_token)
         return data
@@ -218,7 +133,6 @@ export const userAuthStore: any = defineStore({
       if(!err) return ''
 
       let msg: string = err?.message || ''
-      let status: string | number = err?.status || ''
 
       if (msg.includes('VALUE_IS_NULL')) {
         const s = msg.indexOf(': ') + 1

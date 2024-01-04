@@ -36,12 +36,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { userAuthStore } from '@/store/Auth.store'
+import { useUserAuthStore } from '@/store/Auth.store'
 import { regExpStore } from '@/store/RegExp.store'
 
 const router = useRouter()
 
-const store = userAuthStore()
+const store = useUserAuthStore()
 const regExpTest = regExpStore()
 
 const loginLoading = ref(false)

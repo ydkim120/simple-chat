@@ -123,10 +123,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { userAuthStore } from '@/store/Auth.store'
+import { useUserAuthStore } from '@/store/Auth.store'
 import { regExpStore } from '@/store/RegExp.store'
 
-const store = userAuthStore()
+const store = useUserAuthStore()
 const regExpTest = regExpStore()
 
 const loginLoading = ref(false)

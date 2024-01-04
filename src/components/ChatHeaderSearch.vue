@@ -29,9 +29,9 @@
             height="40px"
             empty-icon-font-size="30px"
           />
-          <Chip 
-            v-if="slotProps.option.id === authStore.userInfo.id" 
-            label="나와의 채팅" 
+          <Chip
+            v-if="slotProps.option.id === authStore.userInfo.id"
+            label="나와의 채팅"
           />
           <span class="search-user-option-name">{{ slotProps.option.user_name }}</span>
           <small class="search-user-option-email">{{ slotProps.option.user_email }}</small>
@@ -50,8 +50,8 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue"
 import { useRouter } from 'vue-router'
-import { userAuthStore } from '@/store/Auth.store'
-import { chatStore as chatDataStore } from '@/store/Chat.store'
+import { useUserAuthStore } from '@/store/Auth.store'
+import { useChatStore as chatDataStore } from '@/store/Chat.store'
 
 import fuzzyStringSearch from '@/utils/FuzzyStringSearch'
 
@@ -63,7 +63,7 @@ type profileType = {
 }
 
 const router = useRouter()
-const authStore = userAuthStore()
+const authStore = useUserAuthStore()
 const chatStore = chatDataStore()
 
 onMounted(async () => {

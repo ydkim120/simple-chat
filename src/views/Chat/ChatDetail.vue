@@ -1,11 +1,11 @@
 <template>
   <div class="chat-room-detail-wrap -page-wrap">
-    <div 
-      class="old-chat-list-wrap" 
+    <div
+      class="old-chat-list-wrap"
       ref="chatListWrapRef"
     >
-      <ul 
-        class="chat-list" 
+      <ul
+        class="chat-list"
         ref="chatListRef"
       >
         <li
@@ -21,7 +21,7 @@
             :content="msg.content"
             :created-at="msg.created_at"
             :use-user-info="myEmail !== msg.user_email"
-            :user-photo="msg.user_photo"
+            :user-photo="`${supabaseUrl}/storage/v1/object/sign/avatars/${msg.user_email}_photo`"
           />
         </li>
       </ul>
@@ -60,15 +60,15 @@ import { useRouter, useRoute } from 'vue-router'
 import { supabase as sb } from '@/supabase'
 import { singleChatData } from '@/@types'
 
-import { chatStore as cStore } from '@/store/Chat.store'
-import { userAuthStore } from '@/store/Auth.store'
+import { useChatStore as cStore } from '@/store/Chat.store'
+import { useUserAuthStore } from '@/store/Auth.store'
 
 import ChatBubble from '@/components/ChatBubble.vue'
 
 const router = useRouter()
 const route = useRoute()
 
-const authStore = userAuthStore()
+const authStore = useUserAuthStore()
 const chatStore = cStore()
 
 // const userInfo = ref(null)

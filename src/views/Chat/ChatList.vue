@@ -55,13 +55,13 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase as sb } from '@/supabase'
-import { chatStore as cStore } from '@/store/Chat.store'
-import { userAuthStore } from '@/store/Auth.store'
+import { useChatStore as cStore } from '@/store/Chat.store'
+import { useUserAuthStore } from '@/store/Auth.store'
 import { singleChannelData, profileType } from '@/@types'
 
 const router = useRouter()
 const chatStore = cStore()
-const authStore = userAuthStore()
+const authStore = useUserAuthStore()
 const myInfo = authStore.userInfo
 
 const channelList = ref<singleChannelData[]>([])
@@ -75,7 +75,7 @@ const getRecentChannel = async () => {
   try {
     // const channelId = router.params.id
     const result = await chatStore.getChannelList()
-    channelList.value = result.map((c: singleChannelData) => {
+    const channels = result.map((c: singleChannelData) => {
       const isMe = c.is_me
 
       return {
@@ -91,7 +91,8 @@ const getRecentChannel = async () => {
               .map(item => item.user_photo || ''),
       }
     })
-    console.log('채널 리스트 >>>', result)
+    channelList.value = channels
+    console.log('채널 리스트 >>>', channels)
 
   } catch (error) {
     const errorMessage = chatStore.getErrorMessage(error)
