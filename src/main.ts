@@ -15,14 +15,15 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import InlineMessage from 'primevue/inlinemessage'
 import PanelMenu from 'primevue/panelmenu'
-import Editor from 'primevue/editor'
 import AutoComplete from 'primevue/autocomplete'
 import FileUpload from 'primevue/fileupload'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Dialog from 'primevue/dialog'
 import Skeleton from 'primevue/skeleton'
 import Chip from 'primevue/chip'
+import Tooltip from 'primevue/tooltip'
 
+import Editor from 'primevue/editor'
 import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
 
 const pinia = createPinia()
@@ -44,6 +45,7 @@ createApp(App)
   .component('Skeleton', Skeleton)
   .component('Chip', Chip)
   .component('UserProfilePhoto', UserProfilePhoto)
+  .directive('tooltip', Tooltip)
   .mount('#app')
 
 

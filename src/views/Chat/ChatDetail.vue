@@ -21,7 +21,7 @@
             :content="msg.content"
             :created-at="msg.created_at"
             :use-user-info="myEmail !== msg.user_email"
-            :user-photo="`${supabaseUrl}/storage/v1/object/sign/avatars/${msg.user_email}_photo`"
+            :user-photo="msg.user_photo"
           />
         </li>
       </ul>
@@ -33,13 +33,15 @@
         editorStyle="height: 320px"
         class="new-chat-editor"
         ref="chatEditorRef"
-        @keydown.stop="keydownHandler"
-      >
+        :modules="quillCustomModules"
+        @load="setEditorInstance"
+        >
+        <!-- @keydown.stop="keydownHandler" -->
         <template #toolbar>
           <span class="ql-formats">
-            <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>
-            <button v-tooltip.bottom="'Italic'" class="ql-italic"></button>
-            <button v-tooltip.bottom="'Underline'" class="ql-underline"></button>
+            <button v-tooltip.top="'Bold'" class="ql-bold"></button>
+            <button v-tooltip.top="'Italic'" class="ql-italic"></button>
+            <button v-tooltip.top="'Underline'" class="ql-underline"></button>
           </span>
         </template>
       </Editor>
@@ -81,8 +83,37 @@ const myEmail = ref('')
 const chatEditorRef = ref(null)
 const chatListWrapRef = ref<HTMLElement | null>(null)
 const chatListRef = ref<HTMLElement | null>(null)
+const editorInstance = ref<any>(null)
 
 const chatsWatcher = ref<any>(null)
+
+const quillCustomKeyboardSetting = {
+  keyboard: {
+    bindings: {
+      // shift_enter: {
+      //   key: 13,
+      //   shiftKey: true,
+      //   handler: (range: any, ctx: any) => {
+      //     console.log(range, ctx) // if you want to see the output of the binding
+
+      //     const quill = chatEditorRef.value
+      //     console.log('quill >>>', quill)
+      //     if(quill) quill.insertText(range.index, '<br>')
+      //   }
+      // },
+      only_enter: {
+        key: 13,
+        shiftKey: false,
+        ctrlKey: false,
+        altKey: false,
+        handler: () => {
+          createNewChat(newMsg.value)
+        }
+      }
+    }
+  }
+}
+const quillCustomModules = ref<any>(quillCustomKeyboardSetting)
 
 watch(route.params, async (val) => {
   if (val) {
@@ -106,12 +137,10 @@ onMounted(async () => {
         filter: `channel_id=eq.${channelId.value}`
       },
       async () => {
-        console.log('chats changed !!!!!!')
         await getAllChats()
         await chatStore.updateChannelSummary(channelId.value, lastChat.value)
       }
     )
-  console.log('chatsWatcher.value: ', chatsWatcher.value)
   chatsWatcher.value.subscribe()
 })
 
@@ -120,6 +149,9 @@ onUnmounted(() => chatsWatcher.value?.unsubscribe())
 const scrollToBottom = (element: HTMLElement | null) =>
   element?.scrollTo({ top: chatListRef?.value?.offsetHeight })
 
+/**
+ * 채팅 목록 조회
+ */
 const getAllChats = async () => {
   try {
     if (!channelId.value) {
@@ -139,6 +171,9 @@ const getAllChats = async () => {
   }
 }
 
+/**
+ * 새 채팅 입력
+ */
 const createNewChat = async (chat: string) => {
   newMsg.value = chat.trim()
 
@@ -149,27 +184,44 @@ const createNewChat = async (chat: string) => {
         content: newMsg.value
       })
       if (result) {
-        const editorRef = chatEditorRef.value
-        const quillEditor = editorRef?.quill?.editor || null
-        if(quillEditor) {
-          quillEditor.deleteText()
-          // chatEditorRef.value..deleteText()
-          // chatEditorRef.value.editor.focus()
+        newMsg.value = ''
+        // const editorRef = chatEditorRef.value
+        // console.log('editorRef::' , editorRef)
+        // if(editorRef) editorRef?.deleteText()
+        // const quillEditor = editorRef?.quill?.editor || null
+        // if(quillEditor) {
+        //   quillEditor.deleteText()
+        //   // chatEditorRef.value..deleteText()
+        //   // chatEditorRef.value.editor.focus()
+        // }
+        // await getAllChats()
+        if (editorInstance.value) {
+          editorInstance.value.scrollingContainer.innerHTML = ''
+          editorInstance.value.scrollingContainer.innerText = ''
+          editorInstance.value.scrollingContainer.focus()
         }
-        await getAllChats()
       }
-    } catch (error) {
-      const errorMessage = chatStore.getErrorMessage(error)
-      if (errorMessage) alert(errorMessage)
-    }
+  } catch (error) {
+    const errorMessage = chatStore.getErrorMessage(error)
+    if (errorMessage) alert(errorMessage)
+  }
   }
 }
 
 /**
+ * 에디터 > 로드 시 인스턴스 저장
+ */
+const setEditorInstance = (data: any) => {
+  editorInstance.value = Object.assign({}, data.instance)
+  console.log('에디터 !@@@', editorInstance.value)
+  
+}
+/**
  * 에디터 > 키보드 키 down 이벤트
  */
-const keydownHandler = (e) => {
-  if (e.keyCode === 13) {
+const keydownHandler = (e: KeyboardEvent) => {
+  const key = e.key || e.keyCode
+  if (key === ('Enter' || 13) && !e.shiftKey) {
     e.preventDefault()
     e.stopPropagation()
     createNewChat(newMsg.value)
