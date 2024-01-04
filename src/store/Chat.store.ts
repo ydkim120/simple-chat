@@ -106,7 +106,7 @@ export const useChatStore: any = defineStore({
     async createChannel(userIdList = [], userInfo: userInfoType = authStore?.userInfo) {
       const offset = new Date().getTimezoneOffset() * 60000
       const today = new Date(Date.now() - offset)
-      const user_id_list = [...userIdList, userInfo?.id]
+      const user_id_list = [...new Set([...userIdList, userInfo?.id])]
       const user_list = await authStore.getUsersByUserIds (user_id_list)
 
       const payload = {
@@ -114,7 +114,8 @@ export const useChatStore: any = defineStore({
         updated_at: today,
         user_id_list,
         user_list,
-        summary: ''
+        summary: '',
+        is_me: user_id_list.length === 1 && user_id_list[0] === userInfo?.id
       }
       const { data, error } = await sb
         .from('channels')

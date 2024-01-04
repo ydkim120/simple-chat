@@ -75,24 +75,26 @@ const getRecentChannel = async () => {
   try {
     // const channelId = router.params.id
     const result = await chatStore.getChannelList()
-    const channels = result.map((c: singleChannelData) => {
-      const isMe = c.is_me
+    const channels = result.filter((item: singleChannelData) => item.summary)
+      .map((c: singleChannelData) => {
+        const isMe = c.is_me
 
-      return {
-        ...c,
-        usersNameTxt: isMe
-          ? myInfo?.user_metadata?.user_name
-          :c.user_list.filter((user: profileType) => user.id !== myInfo.id)
-            .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, ''),
-        summaryTxt: c?.summary?.replace(/<[^>]*>?/g, '') || '',
-        userPhotoList: isMe
-          ? myInfo?.photo
-          : c.user_list.filter((user: profileType) => user.id !== myInfo.id)
-              .map(item => item.user_photo || ''),
-      }
-    })
+        return {
+          ...c,
+          usersNameTxt: isMe
+            ? myInfo?.user_metadata?.user_name
+            : c.user_list.filter((user: profileType) => user.id !== myInfo.id)
+                .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, ''),
+          summaryTxt: c?.summary?.replace(/<[^>]*>?/g, '') || '',
+          userPhotoList: isMe
+            ? [myInfo?.photo]
+            : c.user_list.filter((user: profileType) => user.id !== myInfo.id)
+                .map(item => item.user_photo || ''),
+        }
+      })
     channelList.value = channels
     console.log('채널 리스트 >>>', channels)
+    console.log('myInfo >>>', myInfo)
 
   } catch (error) {
     const errorMessage = chatStore.getErrorMessage(error)
@@ -167,7 +169,7 @@ onUnmounted(() => channelListWatcher.value?.unsubscribe())
       width: 25px; 
       height: 25px; 
       border-radius: 50%; 
-      background-color: var(--lightest-gray);
+      background-color: var(--light-gray);
       color: #aaa;
       line-height: 25px;
       font-weight: normal;
