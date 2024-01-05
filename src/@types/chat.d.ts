@@ -1,6 +1,7 @@
 export interface singleChatData {
   id: string
-  created_at: string
+  created_at?: string | undefined
+  created_date?: string | undefined
   content: string | undefined
   user_email: string
   user_id: string

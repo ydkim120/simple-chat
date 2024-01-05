@@ -4,27 +4,44 @@
       class="old-chat-list-wrap"
       ref="chatListWrapRef"
     >
-      <ul
-        class="chat-list"
+      <div 
+        class="chat-list-wrap" 
         ref="chatListRef"
       >
-        <li
-          class="chat-item"
-          :class="{ '-me': myEmail === msg.user_email }"
-          v-for="msg in chatList"
-          :key="msg.id"
+        <ul
+          class="chat-list"
+          v-for="(chatList, date) in chatListGroupByDate"
+          :key="date"
         >
-          <ChatBubble
-            :is-me="myEmail === msg.user_email"
-            :user-mail="msg.user_email"
-            :user-name="msg.user_name"
-            :content="msg.content"
-            :created-at="msg.created_at"
-            :use-user-info="myEmail !== msg.user_email"
-            :user-photo="msg.user_photo"
-          />
-        </li>
-      </ul>
+          <li
+            v-if="date && `${date}` !== 'null'"
+            class="chat-date"
+          >
+            <Button
+              class="chat-date-button"
+              :label="`${date}`"
+              size="small"
+              rounded
+            />
+          </li>
+          <li
+            class="chat-item"
+            :class="{ '-me': myEmail === msg.user_email }"
+            v-for="(msg, idx) in chatList"
+            :key="msg.id"
+          >
+            <ChatBubble
+              :is-me="myEmail === msg.user_email"
+              :user-mail="msg.user_email"
+              :user-name="msg.user_name"
+              :content="msg.content"
+              :created-at="msg.created_at"
+              :use-user-info="myEmail !== msg.user_email"
+              :user-photo="msg.user_photo"
+            />
+          </li>
+        </ul>
+      </div>
     </div>
 
     <div class="new-chat-wrap">
@@ -61,6 +78,8 @@ import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { supabase as sb } from '@/supabase'
 import { singleChatData } from '@/@types'
+import dayjs from 'dayjs'
+import {groupBy} from 'lodash'
 
 import { useChatStore as cStore } from '@/store/Chat.store'
 import { useUserAuthStore } from '@/store/Auth.store'
@@ -76,7 +95,8 @@ const chatStore = cStore()
 // const userInfo = ref(null)
 const channelId = ref<string | string[]>('')
 const newMsg = ref('')
-const chatList = ref<singleChatData[]>([])
+const chatList = ref<singleChatData[]>([]) // 전체 채팅 목록
+const chatListGroupByDate = ref<any>(null) // 날짜 별로 그루핑 한 채팅 목록
 const lastChat = ref('') // 마지막 채팅
 const myEmail = ref('')
 
@@ -160,7 +180,13 @@ const getAllChats = async () => {
     }
     const result = await chatStore.getAllChatsByChannelId(channelId.value, { from: 0, to: 100 })
     chatList.value = result
-    console.log('채팅 리스트 >>>', result)
+    const mappedCreatedAt = result.map((chat: singleChatData, idx: number) => ({
+      ...chat,
+      created_at: setMsgCreateAt(chat, idx)
+    }))
+    chatListGroupByDate.value = groupBy(mappedCreatedAt, 'created_date')
+      
+    console.log('채팅 리스트 >>>', chatListGroupByDate.value)
     if (result?.length) lastChat.value = result[result.length - 1].content
 
     await nextTick()
@@ -214,18 +240,25 @@ const createNewChat = async (chat: string) => {
 const setEditorInstance = (data: any) => {
   editorInstance.value = Object.assign({}, data.instance)
   console.log('에디터 !@@@', editorInstance.value)
-  
 }
 /**
- * 에디터 > 키보드 키 down 이벤트
+ * 메세지 > 생성 시간 세팅
+ * 이후에 보낸 나의 메세지와 동일한 날짜/시간/분이면 한 번만 표기
  */
-const keydownHandler = (e: KeyboardEvent) => {
-  const key = e.key || e.keyCode
-  if (key === ('Enter' || 13) && !e.shiftKey) {
-    e.preventDefault()
-    e.stopPropagation()
-    createNewChat(newMsg.value)
-  }
+const setMsgCreateAt = (
+  msg: singleChatData,
+  msgIdx: number
+) => {
+  const chats = chatList.value
+  if (msgIdx > chats.length - 2) return msg.created_at
+
+  const afterChat = chats[msgIdx + 1]
+
+  const isDiffChatUser = afterChat.user_id !== msg.user_id
+  if (isDiffChatUser) return msg.created_at
+
+  if (dayjs(msg.created_at).format('YYYY-MM-DD HH:mm:00') === dayjs(afterChat.created_at).format('YYYY-MM-DD HH:mm:00')) return ''
+  else return msg.created_at
 }
 </script>
 
@@ -236,6 +269,34 @@ const keydownHandler = (e: KeyboardEvent) => {
   height: calc(100vh - 470px);
 }
 .chat-list {
+  .chat-date {
+    position: sticky;
+    top: 0;
+    text-align: center;
+    padding: var(--gap-xs) 0;
+    margin-bottom: 40px;
+    background-color: var(--white);
+    z-index: 5;
+    &::before {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 1px;
+      background-color: var(--lightest-gray);
+    }
+    .chat-date-button {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--lightest-gray);
+      border-color: var(--lightest-gray);
+      color: #777;
+    }
+  }
   .chat-item {
     display: flex;
     justify-content: flex-start;

@@ -24,7 +24,10 @@
         v-html="content" 
       />
     </li>
-    <li class="chat-bubble-time-wrap">
+    <li 
+      v-if="props.createdAt"
+      class="chat-bubble-time-wrap" 
+    >
       <small class="chat-bubble-time">{{ dateSimple(props.createdAt) }}</small>
     </li>
   </ul>
@@ -53,6 +56,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const dateSimple = (date: string) => {
+  if (!date) return ''
   const dateValue = +new Date(date)
   return dayjs(dateValue).format('A HH:mm')
 }
