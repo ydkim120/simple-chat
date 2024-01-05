@@ -142,7 +142,10 @@
             @blur="() => {
               if (userName) userName = userName.trim()
             }"
-            @keypress.enter.native="() => false"
+            @keydown.enter.stop="(e: KeyboardEvent) => {
+              const key = e.key || e.keyCode
+              if (key === ('Enter' || 13)) changeUserName(userName)
+            }"
           />
           <span v-else>{{ userName }}</span>
           <div class="button-area">
@@ -253,8 +256,10 @@ const changeUserName = async (name: string) => {
       user_name: name 
     } })
     if (data) {
+      alert('닉네임을 변경했습니다.')
       isEditUserName.value = false
-      return alert('닉네임을 변경했습니다.')
+      await authStore.setUserInfo()
+      return setUserInfo()
     }
   } catch (error) {
     const errorMessage = authStore.getErrorMessage(error)
@@ -350,8 +355,8 @@ const saveProfilePhoto = async () => {
     width: 100%;
     & .user-info-field {
       text-align: left;
-      min-width: 150px;
-      width: 150px;
+      min-width: 120px;
+      width: 120px;
     }
     & .register-form-input {
       width: 100%;
