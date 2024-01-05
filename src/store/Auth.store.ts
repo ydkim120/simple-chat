@@ -68,7 +68,7 @@ export const useUserAuthStore: any = defineStore({
      } catch (error) { throw error }
     },
     // 사용자 정보 저장
-    async setUserInfo(accessToken: string) {
+    async setUserInfo(accessToken: string = cookies.get('access_token')) {
       if (!accessToken) return 
 
       const { data: { user }, error } = await sb.auth.getUser(accessToken)
