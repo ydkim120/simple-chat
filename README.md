@@ -30,6 +30,8 @@ Vue3.0 + Typescript + Supabase로 개발 중입니다. 🌝
 * 사용자 정보 수정 (비밀번호, 프로필 사진, 닉네임)
 * 사용자 찾기
 * 실시간 메신저 송수신
+* 예약 메세지
+* 그룹 채팅
 
 
 ## Local Server
@@ -45,13 +47,15 @@ npm run dev
     * `Supabase` 사용법 (간단한 PostgreSQL 문법)
       - 인증 구현
       - 데이터 CRUD
-      - RealTime 기능을 활용, Postgres Changes을 통해 실시간 데이터 가져오도록 적용
       - Storage(Bucket)를 이용한 File 관리
     * Vue3에서 새로 추가된 함수 기반 API인 `Composition API` 살펴보기
     * Typescript 랑 친해지는 중 🫶
 
 2. 2회차 (2024.1.2 ~ )
-    * 진행 중...
+    * `Supabase`
+      - RealTime > Postgres Changes을 통해 테이블 변경 감지
+      - RealTime > Presence로 사용자 실시간 활동 상태(온/오프라인) 감지
+      - cron: Job Scheduling 기능 예약 메세지 로직 구현
   
 
 <!-- ## Learning Objectives -->
@@ -65,6 +69,9 @@ npm run dev
       - 새로운 메신저 수신 시 알람 기능
       - 그룹 채팅 기능
       - 예약 메세지 기능
+      - 사용자 실시간 활동 상태 표시
+      - 채팅방 나가기
+      - 새 메세지 알람 기능
       - 라우팅 변경 시 세션 유지 검토
 
 

@@ -74,6 +74,13 @@ const handleLogout = async () => {
 
 const sideNavList = ref([
   {
+    label: '예약된 메세지',
+    icon: 'pi pi-history',
+    command: () => {
+      router.push({ name: 'reserved-chat-list' })
+    }
+  },
+  {
     label: 'DM',
     icon: 'pi pi-comments',
     command: () => {

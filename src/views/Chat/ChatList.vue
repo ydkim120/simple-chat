@@ -93,6 +93,7 @@ const getRecentChannel = async () => {
         }
       })
     channelList.value = channels
+    chatStore.myChannelList = channels
     console.log('채널 리스트 >>>', channels)
     console.log('myInfo >>>', myInfo)
 

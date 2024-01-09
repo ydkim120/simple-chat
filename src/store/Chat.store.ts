@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useUserAuthStore } from './Auth.store'
 import { supabase as sb } from '@/supabase'
-import { SystemError, userInfoType } from '@/@types'
+import { singleChannelData, SystemError, userInfoType } from '@/@types'
 import dayjs from 'dayjs'
 
 const authStore = useUserAuthStore()
@@ -11,10 +11,14 @@ type newChatType = {
   content: string
 }
 
+interface chatState {
+  myChannelList: singleChannelData[]
+}
+
 export const useChatStore: any = defineStore({
   id: 'chat',
-  state: () => ({
-
+  state: (): chatState => ({
+    myChannelList: []
   }),
   getters: {
 
@@ -29,7 +33,13 @@ export const useChatStore: any = defineStore({
       const { data: chatList, error } = await sb
         .from('chats')
         // .from('channels')
-        .select()
+        .select(`
+          *,
+          profiles (
+            user_name,
+            user_photo
+          )
+        `)
         .eq('channel_id', channelId)
         .range(from, to)
         .order('created_at', { ascending: true })
@@ -53,16 +63,13 @@ export const useChatStore: any = defineStore({
       //   .select('*, users: chats_users!inner(user:profiles(email))')
       //   .in('id', [chatIds?.map(chat => chat.id)])
     },
-    async createNewChat(data: newChatType, userInfo: userInfoType = authStore?.userInfo) {
+    async createNewChat (data: newChatType, userInfo: userInfoType = authStore?.userInfo) {
       const { content, channel_id } = data
       const { id: userId, email, user_metadata } = userInfo
 
-      // const offset = new Date().getTimezoneOffset() * 60000
-      // const today = new Date(Date.now() - offset)
       const today = new Date(Date.now())
 
       const payload = {
-        // id:uuid,
         user_id: userId,
         content,
         created_at: today,

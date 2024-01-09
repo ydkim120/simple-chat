@@ -22,3 +22,18 @@ export interface singleChannelData {
   summaryTxt?: string,
   userPhotoList?: string[]
 }
+export interface singleReservedChatData {
+  id: string
+  created_at?: string | undefined
+  reserved_at?: string | undefined
+  reserved_date?: string | undefined
+  content: string | undefined
+  user_email: string
+  user_id: string
+  user_name: string
+
+  usersNameTxt?: string,
+  contentTxt?: string,
+  userPhotoList?: string[],
+  reservedDateTime: string
+}

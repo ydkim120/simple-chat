@@ -11,6 +11,7 @@ import 'primevue/resources/themes/saga-blue/theme.css' //theme
 import 'primevue/resources/primevue.min.css' //core CSS
 import 'primeicons/primeicons.css' //icons
 import Button from 'primevue/button'
+import SplitButton from 'primevue/splitbutton'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import InlineMessage from 'primevue/inlinemessage'
@@ -22,6 +23,7 @@ import Dialog from 'primevue/dialog'
 import Skeleton from 'primevue/skeleton'
 import Chip from 'primevue/chip'
 import Tooltip from 'primevue/tooltip'
+import Calendar from 'primevue/calendar'
 
 import Editor from 'primevue/editor'
 import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
@@ -33,6 +35,7 @@ createApp(App)
   .use(pinia)
   .use(PrimeVue, { ripple: true })
   .component('Button', Button)
+  .component('SplitButton', SplitButton)
   .component('InputText', InputText)
   .component('Password', Password)
   .component('InlineMessage', InlineMessage)
@@ -44,6 +47,7 @@ createApp(App)
   .component('Dialog', Dialog)
   .component('Skeleton', Skeleton)
   .component('Chip', Chip)
+  .component('Calendar', Calendar)
   .component('UserProfilePhoto', UserProfilePhoto)
   .directive('tooltip', Tooltip)
   .mount('#app')

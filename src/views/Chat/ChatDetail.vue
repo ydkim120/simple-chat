@@ -2,6 +2,7 @@
   <div class="chat-room-detail-wrap -page-wrap">
     <div
       class="old-chat-list-wrap"
+      :class="{'-long': allReservedChatsCount }"
       ref="chatListWrapRef"
     >
       <div 
@@ -44,6 +45,15 @@
       </div>
     </div>
 
+    <small class="reserved-chat-noti" v-if="allReservedChatsCount">
+      <i class="pi pi-history" />
+      지금 채널에 {{ allReservedChatsCount }}개의 예약 메세지가 있습니다.
+      <router-link
+        :to="{ name: 'reserved-chat-list' }"
+      >
+        모든 예약 메세지 보기
+      </router-link>
+    </small>
     <div class="new-chat-wrap">
       <Editor
         v-model="newMsg"
@@ -62,13 +72,57 @@
           </span>
         </template>
       </Editor>
-      <div class="new-chat-send-button-area">
-        <Button 
-          type="submit" 
-          icon="pi pi-send" 
-          @click="createNewChat(newMsg)" 
-        />
-      </div>
+      <SplitButton 
+        class="new-chat-send-button-area"
+        type="submit" 
+        icon="pi pi-send"
+        :model="sendMsgOption"
+        :disabled="!newMsg"
+        @click="createNewChat(newMsg)" 
+      />
+        <!-- severity="secondary" -->
+
+      <Dialog
+        :visible="activeReserveMessageDialog"
+        header="메세지 예약"
+        :style="{ width: '500px' }"
+        modal
+      >
+        <div class="flex-auto reserve-time-wrap">
+          <Calendar
+            v-model="reserveDate"
+            icon-display="input"
+            :min-date="new Date()"
+            date-format="yy-mm-dd"
+            show-icon
+          />
+          <Calendar
+            v-model="reserveTime"
+            icon-display="input"
+            :step-minute="10"
+            :min-date="new Date()"
+            date-format=" "
+            show-icon
+            time-only
+            >
+            <template #inputicon="{ clickCallback }">
+              <i class="pi pi-clock" @click="clickCallback" />
+            </template>
+          </Calendar>
+        </div>
+        <template #footer>
+          <Button
+            label="취소"
+            severity="secondary"
+            @click="activeReserveMessageDialog = false"
+          />
+          <Button
+            label="메세지 예약"
+            @click="() => reserveChat(newMsg)"
+            autofocus
+          />
+        </template>
+      </Dialog>
     </div>
   </div>
 </template>
@@ -79,7 +133,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { supabase as sb } from '@/supabase'
 import { singleChatData } from '@/@types'
 import dayjs from 'dayjs'
-import {groupBy} from 'lodash'
+import API from '@/api'
+import { groupBy } from 'lodash'
 
 import { useChatStore as cStore } from '@/store/Chat.store'
 import { useUserAuthStore } from '@/store/Auth.store'
@@ -135,6 +190,28 @@ const quillCustomKeyboardSetting = {
 }
 const quillCustomModules = ref<any>(quillCustomKeyboardSetting)
 
+// 메세지 예약
+const allReservedChatsCount = ref(0)
+const sendMsgOption = [
+  {
+    label: '메세지 예약하기',
+    command: () => {
+      activeReserveMessageDialog.value = true
+    }
+  }
+]
+const activeReserveMessageDialog = ref(false)
+const reserveDate = ref(new Date())
+const currentMinute = new Date().getMinutes()
+
+const getStepMinutes = (currentMinute: any, step: number) => {
+  return currentMinute % step === 0
+    ? currentMinute
+    : Math.ceil(currentMinute / step) * step
+}
+const reserveTime = ref(new Date(new Date().setMinutes(getStepMinutes(currentMinute, 10))))
+// ref(dayjs(new Date()).format('HH:mm'))
+
 watch(route.params, async (val) => {
   if (val) {
     channelId.value = route.params.id
@@ -146,6 +223,7 @@ onMounted(async () => {
   if (authStore.userInfo) myEmail.value = authStore.userInfo.email
   if (route.params) channelId.value = route.params.id
   await getAllChats()
+  await setReservedChatsCount()
 
   chatsWatcher.value = sb.channel('public:chats')
     .on(
@@ -158,6 +236,7 @@ onMounted(async () => {
       },
       async () => {
         await getAllChats()
+        await setReservedChatsCount()
         await chatStore.updateChannelSummary(channelId.value, lastChat.value)
       }
     )
@@ -178,7 +257,7 @@ const getAllChats = async () => {
       alert('channel 정보가 없습니다.')
       return router.go(-1)
     }
-    const result = await chatStore.getAllChatsByChannelId(channelId.value, { from: 0, to: 100 })
+    const result = await chatStore.getAllChatsByChannelId(channelId.value, { from: 0, to: 200 })
     chatList.value = result
     const mappedCreatedAt = result.map((chat: singleChatData, idx: number) => ({
       ...chat,
@@ -209,29 +288,48 @@ const createNewChat = async (chat: string) => {
         channel_id: channelId.value,
         content: newMsg.value
       })
+      if (result) resetEditor()
+    } catch (error) {
+      const errorMessage = chatStore.getErrorMessage(error)
+      if (errorMessage) alert(errorMessage)
+    }
+  }
+}
+
+/**
+ * 예약 메세지 보내기
+ */
+const reserveChat = async (chat: string) => {
+  if (!reserveDate.value) return alert('예약 날짜를 설정해주세요.')
+  if (!reserveTime.value) return alert('예약 시간을 설정해주세요.')
+
+  newMsg.value = chat.trim()
+
+  if (newMsg.value) {
+    try {
+      const result = await API.chat.createReservedChat({
+        channel_id: channelId.value,
+        content: newMsg.value,
+        reserved_at_timestamp: +new Date(reserveTime.value).setSeconds(0, 0)
+      })
       if (result) {
-        newMsg.value = ''
-        // const editorRef = chatEditorRef.value
-        // console.log('editorRef::' , editorRef)
-        // if(editorRef) editorRef?.deleteText()
-        // const quillEditor = editorRef?.quill?.editor || null
-        // if(quillEditor) {
-        //   quillEditor.deleteText()
-        //   // chatEditorRef.value..deleteText()
-        //   // chatEditorRef.value.editor.focus()
-        // }
-        // await getAllChats()
-        if (editorInstance.value) {
-          editorInstance.value.scrollingContainer.innerHTML = ''
-          editorInstance.value.scrollingContainer.innerText = ''
-          editorInstance.value.scrollingContainer.focus()
-        }
+        activeReserveMessageDialog.value = false
+        await setReservedChatsCount()
       }
+    } catch (error) {
+      const errorMessage = chatStore.getErrorMessage(error)
+      if (errorMessage) return alert('메세지 예약을 실패했습니다: ', errorMessage)
+    }
+  }
+}
+
+const setReservedChatsCount = async () => {
+  try {
+   allReservedChatsCount.value = await API.chat.getReservedChatsCountByChannelId(channelId.value)
+
   } catch (error) {
-    const errorMessage = chatStore.getErrorMessage(error)
-    if (errorMessage) alert(errorMessage)
-  }
-  }
+    allReservedChatsCount.value = 0
+  } 
 }
 
 /**
@@ -240,6 +338,17 @@ const createNewChat = async (chat: string) => {
 const setEditorInstance = (data: any) => {
   editorInstance.value = Object.assign({}, data.instance)
   console.log('에디터 !@@@', editorInstance.value)
+}
+/**
+ * 에디터 > 초기화
+ */
+const resetEditor = () => {
+  newMsg.value = ''
+   if (editorInstance.value) {
+    editorInstance.value.scrollingContainer.innerHTML = ''
+    editorInstance.value.scrollingContainer.innerText = ''
+    editorInstance.value.scrollingContainer.focus()
+  }
 }
 /**
  * 메세지 > 생성 시간 세팅
@@ -260,6 +369,7 @@ const setMsgCreateAt = (
   if (dayjs(msg.created_at).format('YYYY-MM-DD HH:mm:00') === dayjs(afterChat.created_at).format('YYYY-MM-DD HH:mm:00')) return ''
   else return msg.created_at
 }
+
 </script>
 
 <style scoped>
@@ -267,6 +377,7 @@ const setMsgCreateAt = (
 .old-chat-list-wrap {
   overflow-y: auto;
   height: calc(100vh - 470px);
+  &.-long { height: calc(100vh - 490px); }
 }
 .chat-list {
   .chat-date {
@@ -311,6 +422,19 @@ const setMsgCreateAt = (
     }
   }
 }
+/* 예약 메세지 알람 */
+.reserved-chat-noti {
+  /* position: absolute; */
+  /* top: -20px; */
+  padding: 5px 15px;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  font-size: 14px;
+  height: 30px;
+  color: #666;
+  /* box-shadow: inset 0 -20px 0 var(--light-gray); */
+}
 .new-chat-wrap {
   overflow: hidden;
   position: fixed;
@@ -320,17 +444,23 @@ const setMsgCreateAt = (
   margin: 10px;
   border: 1px solid #aaa;
   border-radius: 15px;
-  .new-chat-editor { 
+  .new-chat-editor {
     display: flex;
     flex-direction: column-reverse;
-   }
+    color: var(--text-color);
+  }
 }
 .new-chat-send-button-area {
   position: absolute;
   bottom: 0px;
   right: 0px;
+  height: 40px;
+  width: 80px;
+}
+.reserve-time-wrap {
   display: flex;
-  justify-content: flex-end;
-  button { height: 40px; width: 40px; }
+  align-items: center;
+  gap: var(--gap-s);
+  & > * { flex: 1 1 auto; }
 }
 </style>

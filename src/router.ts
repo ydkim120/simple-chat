@@ -47,6 +47,14 @@ const routes = [
         },
         component: () => import('./views/Chat/ChatDetail.vue')
       },
+      {
+        path: "reserved",
+        name: "reserved-chat-list",
+        meta: {
+          requiresAuth: true
+        },
+        component: () => import('./views/Chat/ReservedChatList.vue')
+      }
     ]
   }
 ]
