@@ -24,13 +24,14 @@ export interface singleChannelData {
 }
 export interface singleReservedChatData {
   id: string
+  channel_id?: string
   created_at?: string | undefined
   reserved_at?: string | undefined
   reserved_date?: string | undefined
   content: string | undefined
   user_email: string
   user_id: string
-  user_name: string
+  user_name: string,
 
   usersNameTxt?: string,
   contentTxt?: string,

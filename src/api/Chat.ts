@@ -6,8 +6,10 @@ import { userInfoType } from '@/@types'
 
 const authStore = useUserAuthStore()
 
+// @type - 예약 메세지 생성/변경 시 전달 데이터
 type reservedChatType = {
-  channel_id: string | string[]
+  id?: string
+  channel_id?: string | string[]
   content: string
   reserved_at_timestamp: string | number | Date
 }
@@ -49,11 +51,36 @@ export default {
       user_name: user_metadata?.user_name,
       channel_id: channel_id,
       reserved_at: reservedDate,
-      reserved_date: dayjs(reservedDate).format('YYYY-MM-DD'),
+      reserved_date: dayjs(reservedDate).format('YYYY-MM-DD')
     }
     const { error } = await sb
       .from('reserved_chats')
       .insert(payload)
+    if (error) throw error
+    return true
+  },
+  // 예약 메세지 삭제
+  async deleteReservedChat(id: string) {
+    const { error } = await sb
+      .from('reserved_chats')
+      .delete()
+      .eq('id', id)
+    if (error) throw error
+    return true
+  },
+  // 예약 메세지 삭제
+  async updateReservedChat(data: reservedChatType) {
+    const { id, content, reserved_at_timestamp } = data
+    const reservedDate = new Date(reserved_at_timestamp).toISOString()
+
+    const { error } = await sb
+      .from('reserved_chats')
+      .update({
+        content,
+        reserved_at: reservedDate,
+        reserved_date: dayjs(reservedDate).format('YYYY-MM-DD')
+      })
+      .eq('id', id)
     if (error) throw error
     return true
   },

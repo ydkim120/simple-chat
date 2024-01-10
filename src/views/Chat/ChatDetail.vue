@@ -45,7 +45,10 @@
       </div>
     </div>
 
-    <small class="reserved-chat-noti" v-if="allReservedChatsCount">
+    <small 
+      v-if="allReservedChatsCount"
+      class="reserved-chat-noti help-txt" 
+    >
       <i class="pi pi-history" />
       지금 채널에 {{ allReservedChatsCount }}개의 예약 메세지가 있습니다.
       <router-link
@@ -72,7 +75,8 @@
           </span>
         </template>
       </Editor>
-      <SplitButton 
+      <SplitButton
+        v-if="!isEditingReservedChat"
         class="new-chat-send-button-area"
         type="submit" 
         icon="pi pi-send"
@@ -182,25 +186,29 @@ const quillCustomKeyboardSetting = {
 const quillCustomModules = ref<any>(quillCustomKeyboardSetting)
 
 // 메세지 예약
+const isEditingReservedChat = computed(() => { // 예약 메세지 변경모드 여부
+  return !!history.state?.editingInfoStr
+})
+
 const allReservedChatsCount = ref(0)
 const sendMsgOption = [
   {
     label: '메세지 예약하기',
     command: () => {
-      activeReserveMessageDialog.value = true
+      activeMessageTimeDialog.value = true
     }
   }
 ]
-const activeReserveMessageDialog = ref(false)
-const reserveDate = ref(new Date())
-const currentMinute = new Date().getMinutes()
+const activeMessageTimeDialog = ref(false)
+// const reserveDate = ref(new Date())
+// const currentMinute = new Date().getMinutes()
 
-const getStepMinutes = (currentMinute: any, step: number) => {
-  return currentMinute % step === 0
-    ? currentMinute
-    : Math.ceil(currentMinute / step) * step
-}
-const reserveTime = ref(new Date(new Date().setMinutes(getStepMinutes(currentMinute, 10))))
+// const getStepMinutes = (currentMinute: any, step: number) => {
+//   return currentMinute % step === 0
+//     ? currentMinute
+//     : Math.ceil(currentMinute / step) * step
+// }
+// const reserveTime = ref(new Date(new Date().setMinutes(getStepMinutes(currentMinute, 10))))
 // ref(dayjs(new Date()).format('HH:mm'))
 
 watch(route.params, async (val) => {
@@ -212,16 +220,23 @@ watch(route.params, async (val) => {
 
 onMounted(async () => {
   if (authStore.userInfo) myEmail.value = authStore.userInfo.email
-  if (route.params) channelId.value = route.params.id
+
+  // 라우트 파라미터 세팅
+  if (route?.params?.id) channelId.value = route.params.id
+  if (history.state?.editingInfoStr) {
+    const editingInfo = JSON.parse(history.state.editingInfoStr)
+    newMsg.value = editingInfo.content || ''
+  }
+
   await getAllChats()
   await setReservedChatsCount()
 
   chatsWatcher.value = sb.channel('public:chats')
     .on(
       'postgres_changes',
-      { 
-        event: '*', 
-        schema: 'public', 
+      {
+        event: '*',
+        schema: 'public',
         table: 'chats',
         filter: `channel_id=eq.${channelId.value}`
       },
@@ -256,7 +271,7 @@ const getAllChats = async () => {
     }))
     chatListGroupByDate.value = groupBy(mappedCreatedAt, 'created_date')
       
-    console.log('채팅 리스트 >>>', chatListGroupByDate.value)
+    // console.log('채팅 리스트 >>>', chatListGroupByDate.value)
     if (result?.length) lastChat.value = result[result.length - 1].content
 
     await nextTick()
@@ -290,21 +305,18 @@ const createNewChat = async (chat: string) => {
 /**
  * 예약 메세지 보내기
  */
-const reserveChat = async (chat: string) => {
-  if (!reserveDate.value) return alert('예약 날짜를 설정해주세요.')
-  if (!reserveTime.value) return alert('예약 시간을 설정해주세요.')
-
-  newMsg.value = chat.trim()
+const createReservedChat = async (selectedDate: Date) => {
+  newMsg.value = newMsg.value.trim()
 
   if (newMsg.value) {
     try {
       const result = await API.chat.createReservedChat({
         channel_id: channelId.value,
         content: newMsg.value,
-        reserved_at_timestamp: +new Date(reserveTime.value).setSeconds(0, 0)
+        reserved_at_timestamp: +new Date(selectedDate).setSeconds(0, 0)
       })
       if (result) {
-        activeReserveMessageDialog.value = false
+        activeMessageTimeDialog.value = false
         await setReservedChatsCount()
       }
     } catch (error) {
@@ -313,14 +325,41 @@ const reserveChat = async (chat: string) => {
     }
   }
 }
+/**
+ * 예약 메세지 수정
+*/
+const updateReservedChat = async (chat: string) => {
+  newMsg.value = chat.trim()
 
+  if (newMsg.value && history.state?.editingInfoStr) {
+    const editingInfo = JSON.parse(history.state.editingInfoStr)
+    const { id, reserved_at } = editingInfo
+
+    try {
+      const result = await API.chat.updateReservedChat({
+        id,
+        content: newMsg.value,
+        reserved_at_timestamp: +new Date(reserved_at)
+      })
+      if (result) {
+        router.push({name: 'reserved-chat-list'})
+      }
+    } catch (error) {
+      const errorMessage = chatStore.getErrorMessage(error)
+      if (errorMessage) return alert('메세지 예약 변경을 실패했습니다: ', errorMessage)
+    }
+  }
+}
+/**
+ * 예약 메세지 갯수 세팅
+ */
 const setReservedChatsCount = async () => {
   try {
    allReservedChatsCount.value = await API.chat.getReservedChatsCountByChannelId(channelId.value)
 
   } catch (error) {
     allReservedChatsCount.value = 0
-  } 
+  }
 }
 
 /**
@@ -328,7 +367,6 @@ const setReservedChatsCount = async () => {
  */
 const setEditorInstance = (data: any) => {
   editorInstance.value = Object.assign({}, data.instance)
-  console.log('에디터 !@@@', editorInstance.value)
 }
 /**
  * 에디터 > 초기화
@@ -367,8 +405,8 @@ const setMsgCreateAt = (
 .chat-room-detail-wrap { padding: 10px 10px 400px; }
 .old-chat-list-wrap {
   overflow-y: auto;
-  height: calc(100vh - 470px);
-  &.-long { height: calc(100vh - 490px); }
+  height: calc(100vh - 480px);
+  &.-long { height: calc(100vh - 500px); }
 }
 .chat-list {
   .chat-date {
@@ -413,26 +451,14 @@ const setMsgCreateAt = (
     }
   }
 }
-/* 예약 메세지 알람 */
-.reserved-chat-noti {
-  /* position: absolute; */
-  /* top: -20px; */
-  padding: 5px 15px;
-  display: flex;
-  align-items: center;
-  gap: var(--gap-xs);
-  font-size: 14px;
-  height: 30px;
-  color: #666;
-  /* box-shadow: inset 0 -20px 0 var(--light-gray); */
-}
+
 .new-chat-wrap {
   overflow: hidden;
   position: fixed;
   left: var(--side-nav-width);
   right: 0;
   bottom: 0;
-  margin: 10px;
+  margin: 10px 10px 20px;
   border: 1px solid #aaa;
   border-radius: 15px;
   .new-chat-editor {
@@ -447,11 +473,30 @@ const setMsgCreateAt = (
   right: 0px;
   height: 40px;
   width: 80px;
+  button { 
+    height: 40px;
+    width: 40px;
+  }
 }
-.reserve-time-wrap {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-s);
-  & > * { flex: 1 1 auto; }
+
+.help-txt {
+  font-size: 14px;
+  color: #666;
+  /* 예약 메세지 알람 */
+  &.reserved-chat-noti {
+    padding: 5px 15px;
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    height: 30px;
+  }
+  /* 새 행 추가 알람 */
+  &.new-line-noti {
+    display: block;
+    position: absolute;
+    right: 10px;
+    bottom: 3px;
+    font-size: 12px;
+  }
 }
 </style>

@@ -34,7 +34,16 @@
         <div class="edit-button-wrap">
           <a 
             class="pi pi-pencil edit-button" 
-            v-tooltip.top="'메세지 편집'" 
+            v-tooltip.top="'메세지 내용 편집'"
+            @click="updateReservedChat(chat)"
+          />
+          <a 
+            class="pi pi-clock edit-button" 
+            v-tooltip.top="'예약 시간 편집'"
+            @click="() => {
+              editingChat = chat
+              activeEditTimeDialog = true
+            }"
           />
           <a 
             class="pi pi-trash edit-button" 
@@ -44,6 +53,16 @@
         </div>
       </li>
     </ul>
+
+    <SetDateTimeDialog  
+      v-model:visible="activeEditTimeDialog"
+      header="메세지 예약 변경"
+      save-button-label="메세지 예약 변경"
+      :step-minute="10"
+      :init-date="editingChat ? editingChat.reserved_at : undefined"
+      :min-date="new Date()"
+      @save="selectedDate => updateReservedTime(selectedDate, editingChat)"
+    />
   </div>
 </template>
 
@@ -55,6 +74,8 @@ import dayjs from 'dayjs'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { useChatStore } from '@/store/Chat.store'
 import api from '@/api'
+import router from '@/router'
+import SetDateTimeDialog from '@/components/Dialog/SetDateTimeDialog.vue'
 
 const authStore = useUserAuthStore()
 const chatStore = useChatStore()
@@ -64,6 +85,9 @@ const reservedList = ref<singleReservedChatData[]>([]) // 예약 채팅 목록
 const reservedListWatcher = ref<any>(null)
 
 const allChannels = ref([])
+
+const activeEditTimeDialog = ref(false)
+const editingChat = ref<singleReservedChatData | undefined>()
 
 onMounted(async () => {
   // if (authStore.userInfo) userEmail.value = authStore.userInfo.email
@@ -121,6 +145,51 @@ const convertDateTimeFormat = (date: string) => {
   if (!date) return ''
   const dateValue = +new Date(date)
   return dayjs(dateValue).format('YYYY-MM-DD A HH:mm')
+}
+/**
+ * 예약 메세지 내용 변경 > 해당 채널로 이동
+ */
+const updateReservedChat = (data: singleReservedChatData) => {
+  if (!data) return
+
+  const chatInfo = {...data}
+  const { id, channel_id, content, reserved_at } = chatInfo
+  const parameter = {
+    id, channel_id, content, reserved_at
+  }
+  router.push({
+    name: 'chat-detail',
+    params: {
+      id: channel_id
+    },
+    state: {
+      editingInfoStr: JSON.stringify(parameter)
+    }
+  })
+}
+/**
+ * 예약 메세지 예약 시간 변경
+ */
+const updateReservedTime = async (
+  date: Date, 
+  chatInfo: singleReservedChatData | undefined = editingChat.value
+) => {
+  if (!chatInfo) return
+  const { id, content } = chatInfo
+
+  try {
+    const result = await api.chat.updateReservedChat({
+      id,
+      content,
+      reserved_at_timestamp: +new Date(date)
+    })
+    if (result) {
+      activeEditTimeDialog.value = false
+    }
+  } catch (error) {
+    const errorMessage = chatStore.getErrorMessage(error)
+    if (errorMessage) return alert('메세지 예약 변경을 실패했습니다: ', errorMessage)
+  }
 }
 
 /**
@@ -185,7 +254,7 @@ const deleteReservedChat = async (id: string) => {
       justify-content: space-between;
       align-items: center;
       width: 100%;
-      padding-right: 40px;
+      padding-right: 65px;
       .reserved-date { color: #666; }
     }
     .reserved-chat-summary {
