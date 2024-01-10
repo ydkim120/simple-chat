@@ -80,55 +80,45 @@
         :disabled="!newMsg"
         @click="createNewChat(newMsg)" 
       />
-        <!-- severity="secondary" -->
-
-      <Dialog
-        :visible="activeReserveMessageDialog"
-        header="메세지 예약"
-        :style="{ width: '500px' }"
-        modal
+      <div 
+        v-else 
+        class="new-chat-send-button-area"
       >
-        <div class="flex-auto reserve-time-wrap">
-          <Calendar
-            v-model="reserveDate"
-            icon-display="input"
-            :min-date="new Date()"
-            date-format="yy-mm-dd"
-            show-icon
-          />
-          <Calendar
-            v-model="reserveTime"
-            icon-display="input"
-            :step-minute="10"
-            :min-date="new Date()"
-            date-format=" "
-            show-icon
-            time-only
-            >
-            <template #inputicon="{ clickCallback }">
-              <i class="pi pi-clock" @click="clickCallback" />
-            </template>
-          </Calendar>
-        </div>
-        <template #footer>
-          <Button
-            label="취소"
-            severity="secondary"
-            @click="activeReserveMessageDialog = false"
-          />
-          <Button
-            label="메세지 예약"
-            @click="() => reserveChat(newMsg)"
-            autofocus
-          />
-        </template>
-      </Dialog>
+        <Button
+          v-tooltip.top="'예약 메세지 변경 취소'"
+          icon="pi pi-times"
+          severity="secondary"
+          @click="() => {
+            resetEditor()
+            router.push({ name: 'reserved-chat-list' })
+          }"
+        />
+        <Button
+          v-tooltip.top="'예약 메세지 저장'"
+          icon="pi pi-check"
+          @click="updateReservedChat(newMsg)"
+        />
+      </div>
     </div>
+    <small
+      class="new-line-noti help-txt"
+      v-show="newMsg.length > 1"
+    >
+      Shift + Enter키를 눌러 새 행을 추가합니다.
+    </small>
+
+    <SetDateTimeDialog
+      v-model:visible="activeMessageTimeDialog"
+      save-button-label="메세지 예약"
+      :step-minute="10"
+      :min-date="new Date()"
+      @save="createReservedChat"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { supabase as sb } from '@/supabase'
 import { singleChatData } from '@/@types'
@@ -140,6 +130,7 @@ import { useChatStore as cStore } from '@/store/Chat.store'
 import { useUserAuthStore } from '@/store/Auth.store'
 
 import ChatBubble from '@/components/ChatBubble.vue'
+import SetDateTimeDialog from '@/components/Dialog/SetDateTimeDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
