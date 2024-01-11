@@ -1,10 +1,7 @@
 
 import { supabase as sb } from '@/supabase'
 import dayjs from 'dayjs'
-import { useUserAuthStore } from '@/store/Auth.store'
 import { userInfoType } from '@/@types'
-
-const authStore = useUserAuthStore()
 
 // @type - 예약 메세지 생성/변경 시 전달 데이터
 type reservedChatType = {
@@ -17,7 +14,9 @@ type reservedChatType = {
 export default {
   // ===== 예약 메세지
   // 예약 메세지 조회
-  async getReservedChatsByUserId(userId: string = authStore.userInfo?.id, { from = 1, to = 10 }) {
+  async getReservedChatsByUserId(userId: string, { from = 1, to = 10 }) {
+    if (!userId) return []
+
     const { data: chatList, error } = await sb
       .from('reserved_chats')
       // .select(`
@@ -36,7 +35,9 @@ export default {
     return chatList
   },
   // 예약 메세지 생성
-  async createReservedChat (data: reservedChatType, userInfo: userInfoType = authStore?.userInfo) {
+  async createReservedChat (data: reservedChatType, userInfo: userInfoType) {
+    if (!data || !userInfo) throw new Error()
+
     const { content, channel_id, reserved_at_timestamp } = data
     const { id: userId, email, user_metadata } = userInfo
 

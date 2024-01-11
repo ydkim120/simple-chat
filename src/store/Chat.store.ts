@@ -110,6 +110,20 @@ export const useChatStore: any = defineStore({
 
       return channels
     },
+    // 채널 정보 조회 (단건)
+    async getChannelInfo(channelId: string | string[]) {
+      if (!channelId) return null
+      const id = Array.isArray(channelId) ? channelId[0] : channelId
+      const { data: channels, error } = await sb
+        .from('channels')
+        .select()
+        .eq('channel_id', id)
+
+      if (error) throw error
+      if (!channels?.length) throw new Error('채널 상세 조회에 문제가 발생했습니다.')
+
+      return channels[0]
+    },
     // 채널 생성
     async createChannel(userIdList = [], userInfo: userInfoType = authStore?.userInfo) {
       // const offset = new Date().getTimezoneOffset() * 60000

@@ -1,12 +1,19 @@
 <template>
   <div class="chat-room-detail-wrap -page-wrap">
+    <div class="chat-room-user-info" >
+      <a
+        class="pi pi-chevron-left go-back-button"
+        @click="router.push({ name: 'chat-list'})"
+      />
+      <b v-if="channelInfo">{{ channelInfo.usersNameTxt }}</b>
+    </div>
     <div
       class="old-chat-list-wrap"
       :class="{'-long': allReservedChatsCount }"
       ref="chatListWrapRef"
     >
-      <div 
-        class="chat-list-wrap" 
+      <div
+        class="chat-list-wrap"
         ref="chatListRef"
       >
         <ul
@@ -60,7 +67,7 @@
     <div class="new-chat-wrap">
       <Editor
         v-model="newMsg"
-        editorStyle="height: 320px"
+        editorStyle="height: 290px"
         class="new-chat-editor"
         ref="chatEditorRef"
         :modules="quillCustomModules"
@@ -125,9 +132,9 @@
 import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { supabase as sb } from '@/supabase'
-import { singleChatData } from '@/@types'
+import { singleChatData, singleChannelData, profileType } from '@/@types'
 import dayjs from 'dayjs'
-import API from '@/api'
+import api from '@/api'
 import { groupBy } from 'lodash'
 
 import { useChatStore as cStore } from '@/store/Chat.store'
@@ -143,6 +150,7 @@ const authStore = useUserAuthStore()
 const chatStore = cStore()
 
 // const userInfo = ref(null)
+const channelInfo = ref<singleChannelData | null>(null)
 const channelId = ref<string | string[]>('')
 const newMsg = ref('')
 const chatList = ref<singleChatData[]>([]) // 전체 채팅 목록
@@ -222,7 +230,10 @@ onMounted(async () => {
   if (authStore.userInfo) myEmail.value = authStore.userInfo.email
 
   // 라우트 파라미터 세팅
-  if (route?.params?.id) channelId.value = route.params.id
+  if (route?.params?.id) {
+    channelId.value = route.params.id
+    await setChannelInfo(channelId.value)
+  }
   if (history.state?.editingInfoStr) {
     const editingInfo = JSON.parse(history.state.editingInfoStr)
     newMsg.value = editingInfo.content || ''
@@ -301,7 +312,24 @@ const createNewChat = async (chat: string) => {
     }
   }
 }
+/**
+ * 채널 정보 조회
+ */
+const setChannelInfo = async (channelId: string | string[]) => {
+  try {
+    const info = await chatStore.getChannelInfo(channelId)
+    console.log('@@@ info > ', info)
+    channelInfo.value = {
+      ...info,
+      usersNameTxt: info.is_me
+        ? authStore.userInfo?.user_metadata?.user_name
+        : info.user_list.filter((user: profileType) => user.id !== authStore.userInfo.id)
+            .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, '')
+    }
+  } catch (error) { console.error(error)}
+}
 
+// ============= 예약 메세지 관련 ==============
 /**
  * 예약 메세지 보내기
  */
@@ -310,11 +338,11 @@ const createReservedChat = async (selectedDate: Date) => {
 
   if (newMsg.value) {
     try {
-      const result = await API.chat.createReservedChat({
+      const result = await api.chat.createReservedChat({
         channel_id: channelId.value,
         content: newMsg.value,
         reserved_at_timestamp: +new Date(selectedDate).setSeconds(0, 0)
-      })
+      }, authStore.userInfo)
       if (result) {
         activeMessageTimeDialog.value = false
         await setReservedChatsCount()
@@ -336,7 +364,7 @@ const updateReservedChat = async (chat: string) => {
     const { id, reserved_at } = editingInfo
 
     try {
-      const result = await API.chat.updateReservedChat({
+      const result = await api.chat.updateReservedChat({
         id,
         content: newMsg.value,
         reserved_at_timestamp: +new Date(reserved_at)
@@ -355,7 +383,7 @@ const updateReservedChat = async (chat: string) => {
  */
 const setReservedChatsCount = async () => {
   try {
-   allReservedChatsCount.value = await API.chat.getReservedChatsCountByChannelId(channelId.value)
+   allReservedChatsCount.value = await api.chat.getReservedChatsCountByChannelId(channelId.value)
 
   } catch (error) {
     allReservedChatsCount.value = 0
@@ -403,6 +431,21 @@ const setMsgCreateAt = (
 
 <style scoped>
 .chat-room-detail-wrap { padding: 10px 10px 400px; }
+.chat-room-user-info {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  height: 30px;
+  line-height: 30px;
+  background-color: var(--white);
+  font-size: 16px;
+  gap: var(--gap-s);
+  .go-back-button { 
+    color: #aaa;
+    cursor: pointer;
+    &:hover { color: #666; }
+  }
+}
 .old-chat-list-wrap {
   overflow-y: auto;
   height: calc(100vh - 480px);
