@@ -36,7 +36,7 @@
       </FileUpload>
 
       <Dialog 
-        :visible="activePreviewPhoto" 
+        v-model:visible="activePreviewPhoto" 
         header='사진 미리보기'
         :style="{ width: '300px' }"
         modal 
@@ -45,7 +45,7 @@
           :src="userPhotoPreview || ''"
           width="180px"
           height="180px"
-          :style="{ margin: '0 auto' }"
+          :style="{ marginLeft: '40px' }"
         />
         <template #footer>
           <Button
@@ -82,7 +82,7 @@
           @click="activeChangePasswordDialog = true"
         />
         <Dialog 
-          :visible="activeChangePasswordDialog" 
+          v-model:visible="activeChangePasswordDialog" 
           header='새 비밀번호 설정'
           :style="{ width: '500px' }"
           modal 
