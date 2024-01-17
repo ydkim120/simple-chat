@@ -1,17 +1,17 @@
 <template>
   <div class="chat-room-list-wrap">
-    <ul 
-      class="chat-room-list" 
-      v-if="channelList.length"
-    >
-      <li
-        class="chat-room-item"
-        v-for="ch in channelList"
-        :key="ch.channel_id"
-        @click="routeToDetail(ch.channel_id)"
+    <ChatListSkeleton v-if="isGetChannelList" />
+    <template v-else>
+      <ul 
+        class="chat-room-list" 
+        v-if="channelList.length"
       >
-        <Skeleton v-if="isGetChannelList"></Skeleton>
-        <template v-else>
+        <li
+          class="chat-room-item"
+          v-for="ch in channelList"
+          :key="ch.channel_id"
+          @click="routeToDetail(ch.channel_id)"
+        >
           <ol>
             <li 
               v-for="(photo, idx) in ch.userPhotoList" 
@@ -19,6 +19,8 @@
             >
               <UserProfilePhoto 
                 :src="photo"
+                use-online
+                is-online
                 width="80px"
                 height="80px"
                 empty-icon-font-size="50px"
@@ -39,15 +41,24 @@
             </div>
             <div class="channel-summary" v-text="ch.summaryTxt" />
           </div>
-        </template>
-      </li>
-    </ul>
-    <div 
-      v-else
-      class="empty-contents"
-    >
-      대화 중인 상대가 없습니다.<br>사용자를 검색해 Messenger를 시작해보세요.
-    </div>
+          <Badge
+            v-if="alarmsGroupedByChannelId
+              && alarmsGroupedByChannelId[ch.channel_id]
+              && alarmsGroupedByChannelId[ch.channel_id].length"
+            severity="warning"
+            :value="alarmsGroupedByChannelId[ch.channel_id].length >= 100
+              ? '99+'
+              : alarmsGroupedByChannelId[ch.channel_id].length"
+          />
+        </li>
+      </ul>
+      <div 
+        v-else
+        class="common-empty-contents"
+      >
+        대화 중인 상대가 없습니다.<br>사용자를 검색해 Messenger를 시작해보세요.
+      </div>
+    </template>
   </div>
 </template>
 
@@ -55,9 +66,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase as sb } from '@/supabase'
+import { groupBy } from 'lodash'
 import { useChatStore as cStore } from '@/store/Chat.store'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { singleChannelData, profileType } from '@/@types'
+import ChatListSkeleton from '@/components/LoadingSkeleton/ChatList.vue'
+import api from '@/api'
 
 const router = useRouter()
 const chatStore = cStore()
@@ -65,14 +79,18 @@ const authStore = useUserAuthStore()
 const myInfo = authStore.userInfo
 
 const channelList = ref<singleChannelData[]>([])
-
 const channelListWatcher = ref<any>(null)
 
-// 로딩
-const isGetChannelList = ref(true)
+const alarmsGroupedByChannelId = ref<any>(null)
+const alarmsWatcher = ref<any>(null)
 
+// 로딩
+const isGetChannelList = ref(false)
+
+// 채널 목록 조회
 const getRecentChannel = async () => {
   try {
+    isGetChannelList.value = true
     // const channelId = router.params.id
     const result = await chatStore.getChannelList()
     const channels = result.filter((item: singleChannelData) => item.summary)
@@ -89,7 +107,7 @@ const getRecentChannel = async () => {
           userPhotoList: isMe
             ? [myInfo?.photo]
             : c.user_list.filter((user: profileType) => user.id !== myInfo.id)
-                .map(item => item.user_photo || ''),
+                .map(item => item.user_photo || '')
         }
       })
     channelList.value = channels
@@ -105,31 +123,70 @@ const getRecentChannel = async () => {
   }
 }
 
+// 내 알람 목록 조회
+const getAlarms = async() => {
+  try {
+    isGetChannelList.value = true
+    const alarmList = await api.alarm.getAlarms(myInfo.id)
+
+    alarmsGroupedByChannelId.value = groupBy(alarmList, 'channel_id')
+  } catch (error) {
+    const errorMessage = chatStore.getErrorMessage(error)
+    if (errorMessage) alert(errorMessage)
+  } finally {
+    isGetChannelList.value = false
+  }
+}
+
+
 const routeToDetail = (channel_id: string) => {
   router.push({ 
     name: 'chat-detail',
     params: {
       id: channel_id
+    },
+    state: {
+      visitTimeStamp: +new Date()
     }
   })
 }
 
 onMounted(async () => {
   // if (authStore.userInfo) userEmail.value = authStore.userInfo.email
+  await getAlarms()
   await getRecentChannel()
 
+  watchChannelList()
+  watchAlarms()
+})
+
+onUnmounted(() => {
+  channelListWatcher.value?.unsubscribe()
+  alarmsWatcher.value?.unsubscribe()
+})
+
+const watchChannelList = () => {
   channelListWatcher.value = sb.channel('public:channels')
     .on(
       'postgres_changes',
-       { event: '*', schema: 'public', table: 'channels' },
-       async () => {
+      { event: '*', schema: 'public', table: 'channels' },
+      async () => {
         await getRecentChannel()
-       }
+      }
     )
   channelListWatcher.value.subscribe()
-})
-
-onUnmounted(() => channelListWatcher.value?.unsubscribe())
+}
+const watchAlarms = () => {
+  alarmsWatcher.value = sb.channel('public:alarms')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'alarms' },
+      async () => {
+        await getAlarms()
+      }
+    )
+  alarmsWatcher.value.subscribe()
+}
 </script>
 
 <style scoped>
@@ -147,20 +204,11 @@ onUnmounted(() => channelListWatcher.value?.unsubscribe())
     }
   }
 }
-.empty-contents {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  color: #aaa;
-  font-size: 18px;
-  text-align: center;
-  line-height: 1.5;
-}
 .channel-content {
   display: flex;
   flex-direction: column;
   padding: var(--gap-xs) 0;
+  width: calc(100% - 150px);
   .channel-user-name-wrap {
     display: flex;
     align-items: center;

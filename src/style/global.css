@@ -5,11 +5,12 @@
   --main-dark-blue: #2046b3;
   --main-red: #ff3f89;
   --dark-gray: #4a566a;
+  --gray: #aaa;
   --light-gray: #EAEAEA;
   --lightest-gray: #F3F3F3;
   --main-black: #020202;
 
-  --green: #609966;
+  --green: #50a100;
   --dark-green: #40513B;
   --apple-green: #9DC08B;
   --beige-green: #EDF1D6;
@@ -18,6 +19,8 @@
 
   --light-yellow: #FFF7E3;
   --yellow: #FFDE8E;
+
+  --pastel-orange: #FFB666;
 
   --lumDark: 45%;
   --lumLight: 80%;
@@ -152,39 +155,17 @@ textarea {
   justify-content: center;
 }
 
-/* button */
-.link-button {
-  display: inline-block;
-  padding: 0 var(--gap);
-  min-width: 150px;
-  height: 45px;
-  background-color: #fff;
-  border: 1px solid var(--main-blue);
-  border-radius: 45px;
-  color: var(--main-blue);
-  font-size: 16px;
-  line-height: 45px;
+.help-txt {
+  color: #666;
+}
+
+.common-empty-contents {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #aaa;
+  font-size: 18px;
   text-align: center;
-  transition: all .2s;
-}
-
-.link-button:hover {
-  color: var(--white);
-  font-weight: 500;
-  background-color: var(--main-blue);
-}
-
-.link-button.-blue {
-  color: var(--white);
-  background-color: var(--main-blue);
-}
-
-.link-button.-gray {
-  color: var(--dark-gray);
-  border: 1px solid var(--dark-gray);
-  background-color: var(--white);
-}
-
-.link-button.-gray:hover {
-  color: hsl(var(--dark-gray), var(--lumDark));
+  line-height: 1.5;
 }

@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import router from '../router'
 import { supabase as sb } from '@/supabase'
+import api from '@/api'
 import { useCookies } from 'vue3-cookies'
 
 import { loginUserType, registerUserType, SystemError, userInfoType,  sessionObjType } from '@/@types'
 
 import { useProfilePhotoStore } from './ProfilePhoto.store'
+
 
 const { cookies } = useCookies()
 
@@ -21,6 +23,7 @@ export const useUserAuthStore: any = defineStore({
     isAuth: false
   }),
   getters: {
+    isUserInfo(state): boolean { return !!state.userInfo }
     // getMessageAuth: (state) => state.message,
     // isAuth: (state) => state.isAuth,
   },

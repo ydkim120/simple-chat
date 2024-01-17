@@ -1,58 +1,70 @@
 <template>
   <div class="reserved-chat-list-wrap">
     <h3>예약된 메세지</h3>
-    <ul class="reserved-chat-list">
-      <li 
-        class="reserved-chat-item"
-        v-for="chat in reservedList"
-        :key="chat.id"
+    <ReservedChatListSkeleton v-if="isGetReservedList" />
+    <template v-else>
+      <ul 
+        class="reserved-chat-list" 
+        v-if="reservedList.length"
       >
-        <ol>
-          <li 
-            v-for="(photo, idx) in chat.userPhotoList" 
-            :key="`userProfilePhoto_${idx}`"
-          >
-            <UserProfilePhoto 
-              :src="photo"
-              width="60px"
-              height="60px"
-              empty-icon-font-size="40px"
+        <li 
+          class="reserved-chat-item"
+          v-for="chat in reservedList"
+          :key="chat.id"
+        >
+          <ol>
+            <li 
+              v-for="(photo, idx) in chat.userPhotoList" 
+              :key="`userProfilePhoto_${idx}`"
+            >
+              <UserProfilePhoto 
+                :src="photo"
+                width="60px"
+                height="60px"
+                empty-icon-font-size="40px"
+              />
+            </li>
+          </ol>
+          <div class="reserved-chat-content">
+            <span class="reserved-chat-content-header">
+              <b class="chat-user-name">
+                {{ chat.usersNameTxt }}
+              </b>
+              <small class="reserved-date">
+                <b>{{ chat.reservedDateTime }}</b>&nbsp;에 전송됨
+              </small>
+            </span>
+            <div class="reserved-chat-summary" v-text="chat.contentTxt" />
+          </div>
+          <div class="edit-button-wrap">
+            <a 
+              class="pi pi-pencil edit-button" 
+              v-tooltip.top="'메세지 내용 편집'"
+              @click="updateReservedChat(chat)"
             />
-          </li>
-        </ol>
-        <div class="reserved-chat-content">
-          <span class="reserved-chat-content-header">
-            <b class="chat-user-name">
-              {{ chat.usersNameTxt }}
-            </b>
-            <small class="reserved-date">
-              <b>{{ chat.reservedDateTime }}</b>&nbsp;에 전송됨
-            </small>
-          </span>
-          <div class="reserved-chat-summary" v-text="chat.contentTxt" />
-        </div>
-        <div class="edit-button-wrap">
-          <a 
-            class="pi pi-pencil edit-button" 
-            v-tooltip.top="'메세지 내용 편집'"
-            @click="updateReservedChat(chat)"
-          />
-          <a 
-            class="pi pi-clock edit-button" 
-            v-tooltip.top="'예약 시간 편집'"
-            @click="() => {
-              editingChat = chat
-              activeEditTimeDialog = true
-            }"
-          />
-          <a 
-            class="pi pi-trash edit-button" 
-            v-tooltip.top="'메세지 삭제'"
-            @click="deleteReservedChat(chat.id)"
-          />
-        </div>
-      </li>
-    </ul>
+            <a 
+              class="pi pi-clock edit-button" 
+              v-tooltip.top="'예약 시간 편집'"
+              @click="() => {
+                editingChat = chat
+                activeEditTimeDialog = true
+              }"
+            />
+            <a 
+              class="pi pi-trash edit-button" 
+              v-tooltip.top="'메세지 삭제'"
+              @click="deleteReservedChat(chat.id)"
+            />
+          </div>
+        </li>
+      </ul>
+      <div 
+        v-else
+        class="common-empty-contents"
+      >
+        예약된 메세지가 없습니다.
+      </div>
+    </template>
 
     <SetDateTimeDialog  
       v-model:visible="activeEditTimeDialog"
@@ -76,6 +88,7 @@ import { useChatStore } from '@/store/Chat.store'
 import api from '@/api'
 import router from '@/router'
 import SetDateTimeDialog from '@/components/Dialog/SetDateTimeDialog.vue'
+import ReservedChatListSkeleton from '@/components/LoadingSkeleton/ReservedChatList.vue'
 
 const authStore = useUserAuthStore()
 const chatStore = useChatStore()
@@ -83,6 +96,7 @@ const myInfo = authStore.userInfo
 
 const reservedList = ref<singleReservedChatData[]>([]) // 예약 채팅 목록
 const reservedListWatcher = ref<any>(null)
+const isGetReservedList = ref(true)
 
 const allChannels = ref([])
 
@@ -109,7 +123,8 @@ onUnmounted(() => reservedListWatcher.value?.unsubscribe())
 
 const getReservedChatList = async () => {
   try {
-    // const channelId = router.params.id
+    isGetReservedList.value = true
+
     const result = await api.chat.getReservedChatsByUserId(authStore.userInfo.id, { from: 0, to: 100})
 
     const reservedChats = result.map(c => {
@@ -138,6 +153,7 @@ const getReservedChatList = async () => {
     alert('예약된 메세지 목록 조회에 문제가 발생했습니다.', error)
     console.error(error)
   } finally {
+    isGetReservedList.value = false
   }
 }
 
@@ -163,7 +179,8 @@ const updateReservedChat = (data: singleReservedChatData) => {
       id: channel_id
     },
     state: {
-      editingInfoStr: JSON.stringify(parameter)
+      editingInfoStr: JSON.stringify(parameter),
+      visitTimeStamp: +new Date()
     }
   })
 }
