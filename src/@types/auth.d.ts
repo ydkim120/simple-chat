@@ -27,6 +27,8 @@ export type profileType = {
   user_photo?: string | undefined
   created_at?: string
   updated_at?: string | undefined
+  
+  leaved_at?: date | undefined
 }
 
 export type sessionObjType = {

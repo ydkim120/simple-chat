@@ -11,6 +11,11 @@
     border-color: var(--secondary);
     color: var(--white);
   }
+  &.p-button-warning {
+    background-color: var(--pastel-orange);
+    border-color: var(--pastel-orange);
+    color: var(--text-color);
+  }
 }
 
 /* Input Text */
@@ -71,4 +76,9 @@
     }
     .p-fileupload-content { padding: 15px; border: none; }
   }
+}
+
+/* Badge */
+.p-badge {
+  &.p-badge-warning { background-color: var(--pastel-orange); color: var(--white); }
 }

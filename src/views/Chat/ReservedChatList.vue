@@ -179,8 +179,7 @@ const updateReservedChat = (data: singleReservedChatData) => {
       id: channel_id
     },
     state: {
-      editingInfoStr: JSON.stringify(parameter),
-      visitTimeStamp: +new Date()
+      editingInfoStr: JSON.stringify(parameter)
     }
   })
 }

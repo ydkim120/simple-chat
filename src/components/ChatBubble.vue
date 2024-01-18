@@ -12,23 +12,29 @@
       />
     </li>
     <li>
-      <b 
+      <b
         v-if="!isMe"
-        class="chat-bubble-user-name" 
+        class="chat-bubble-user-name"
       >
         {{ props.userName }}
       </b>
-      <div 
-        class="chat-bubble-content" 
-        :class="{ '-me': props.isMe }" 
-        v-html="content" 
+      <div
+        class="chat-bubble-content"
+        :class="{ '-me': props.isMe }"
+        v-html="content"
       />
     </li>
-    <li 
+    <li
       v-if="props.createdAt"
-      class="chat-bubble-time-wrap" 
+      class="chat-bubble-time-wrap"
     >
       <small class="chat-bubble-time">{{ dateSimple(props.createdAt) }}</small>
+    </li>
+    <li
+      v-if="props.unreadCount && isMe"
+      class="chat-bubble-is-new-wrap"
+    >
+      <small class="chat-bubble-is-new">{{ props.unreadCount >= 100 ? '99+' : props.unreadCount }}</small>
     </li>
   </ul>
 </template>
@@ -44,6 +50,7 @@ export interface Props {
   userEmail?: string
   userName?: string
   userPhoto?: string
+  unreadCount?: number
 }
 const props = withDefaults(defineProps<Props>(), {
   useUserInfo: false,
@@ -52,7 +59,8 @@ const props = withDefaults(defineProps<Props>(), {
   createdAt: '',
   userEmail: '',
   userName: '',
-  userPhoto: ''
+  userPhoto: '',
+  unreadCount: 0
 })
 
 const dateSimple = (date: string) => {
@@ -135,6 +143,17 @@ const dateSimple = (date: string) => {
       position: absolute;
       bottom: 0;
       color: var(--dark-gray);
+    }
+  }
+  .chat-bubble-is-new-wrap {
+    position: relative;
+    width: 10px;
+    .chat-bubble-is-new {
+      position: absolute;
+      bottom: 0;
+      color: var(--pastel-orange);
+      font-size: 11px;
+      font-weight: bold;
     }
   }
 }

@@ -5,7 +5,7 @@
         class="pi pi-chevron-left go-back-button"
         @click="router.push({ name: 'chat-list'})"
       />
-      <b v-if="channelInfo">{{ channelInfo.usersNameTxt }}</b>
+      <h3 v-if="channelInfo">{{ channelInfo.usersNameTxt }}</h3>
     </div>
     <div
       class="old-chat-list-wrap"
@@ -40,10 +40,11 @@
           >
             <ChatBubble
               :is-me="myEmail === msg.user_email"
+              :unread-count="alarmsGroupByChatId[msg.id] ? alarmsGroupByChatId[msg.id].length : 0"
               :user-mail="msg.user_email"
               :user-name="msg.user_name"
               :content="msg.content"
-              :created-at="msg.created_at"
+              :created-at="msg.custom_created_at"
               :use-user-info="myEmail !== msg.user_email"
               :user-photo="msg.user_photo"
             />
@@ -155,6 +156,7 @@ const channelId = ref<string | string[]>('')
 const newMsg = ref('')
 const chatList = ref<singleChatData[]>([]) // 전체 채팅 목록
 const chatListGroupByDate = ref<any>(null) // 날짜 별로 그루핑 한 채팅 목록
+const alarmsGroupByChatId = ref<any>({}) // custom_chat_id로 그루핑 된 내가 보낸 알람들
 const lastChat = ref('') // 마지막 채팅
 const myEmail = ref('')
 
@@ -164,6 +166,7 @@ const chatListRef = ref<HTMLElement | null>(null)
 const editorInstance = ref<any>(null)
 
 const chatsWatcher = ref<any>(null)
+const alarmsWatcher = ref<any>(null)
 
 const quillCustomKeyboardSetting = {
   keyboard: {
@@ -208,17 +211,6 @@ const sendMsgOption = [
   }
 ]
 const activeMessageTimeDialog = ref(false)
-// const reserveDate = ref(new Date())
-// const currentMinute = new Date().getMinutes()
-
-// const getStepMinutes = (currentMinute: any, step: number) => {
-//   return currentMinute % step === 0
-//     ? currentMinute
-//     : Math.ceil(currentMinute / step) * step
-// }
-// const reserveTime = ref(new Date(new Date().setMinutes(getStepMinutes(currentMinute, 10))))
-// ref(dayjs(new Date()).format('HH:mm'))
-
 watch(route.params, async (val) => {
   if (val) {
     channelId.value = route.params.id
@@ -239,9 +231,17 @@ onMounted(async () => {
     newMsg.value = editingInfo.content || ''
   }
 
-  await getAllChats()
-  await setReservedChatsCount()
+  await getAllChats(true) // 채널 내 채팅 목록 조회
+  await setReservedChatsCount() // 채널의 예약메세지 갯수 조회
+  await deleteChannelMyAlarams() // 채널의 내가 잃지 않은 메세지 제거 (알람)
+  await getAlarmsGroupByChatId() // 채널 내 잃지 않은 메세지 조회 (알람)
 
+  watchChats()
+  watchAlarms()
+})
+
+// ============= 테이블 실시간 감지 관련 ==============
+const watchChats = () => {
   chatsWatcher.value = sb.channel('public:chats')
     .on(
       'postgres_changes',
@@ -258,17 +258,32 @@ onMounted(async () => {
       }
     )
   chatsWatcher.value.subscribe()
-})
+}
+const watchAlarms = () => {
+  alarmsWatcher.value = sb.channel('public:alarms')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'alarms' },
+      async () => {
+        await getAlarmsGroupByChatId()
+      }
+    )
+  alarmsWatcher.value.subscribe()
+}
 
-onUnmounted(() => chatsWatcher.value?.unsubscribe())
-
-const scrollToBottom = (element: HTMLElement | null) =>
-  element?.scrollTo({ top: chatListRef?.value?.offsetHeight })
-
+// ============= 채팅 관련 ==============
+const scrollToBottom = (element: HTMLElement | null, isInit = false) => {
+  const newEl: HTMLElement[] | undefined = chatListRef.value?.getElementsByClassName('is-new')
+  element?.scrollTo({ 
+    top: newEl?.length && isInit
+      ? (newEl[0].offsetHeight + 230)
+      : chatListRef?.value?.offsetHeight 
+  })
+}
 /**
  * 채팅 목록 조회
  */
-const getAllChats = async () => {
+const getAllChats = async (isInit = false) => {
   try {
     if (!channelId.value) {
       alert('channel 정보가 없습니다.')
@@ -278,15 +293,15 @@ const getAllChats = async () => {
     chatList.value = result
     const mappedCreatedAt = result.map((chat: singleChatData, idx: number) => ({
       ...chat,
-      created_at: setMsgCreateAt(chat, idx)
+      custom_created_at: setMsgCreateAt(chat, idx)
     }))
     chatListGroupByDate.value = groupBy(mappedCreatedAt, 'created_date')
-      
+
     // console.log('채팅 리스트 >>>', chatListGroupByDate.value)
     if (result?.length) lastChat.value = result[result.length - 1].content
 
     await nextTick()
-    scrollToBottom(chatListWrapRef.value)
+    scrollToBottom(chatListWrapRef.value, isInit)
   } catch (error) {
     const errorMessage = chatStore.getErrorMessage(error)
     if (errorMessage) alert(errorMessage)
@@ -326,6 +341,10 @@ const setChannelInfo = async (channelId: string | string[]) => {
         : info.user_list.filter((user: profileType) => user.id !== authStore.userInfo.id)
             .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, '')
     }
+    
+    // const myInfo = info.user_list.find((user: profileType) => user.id === authStore.userInfo.id)
+    // myLastLeavedAt.value = myInfo.leaved_at
+
   } catch (error) { console.error(error)}
 }
 
@@ -349,7 +368,10 @@ const createReservedChat = async (selectedDate: Date) => {
       }
     } catch (error) {
       const errorMessage = chatStore.getErrorMessage(error)
-      if (errorMessage) return alert('메세지 예약을 실패했습니다: ', errorMessage)
+      if (errorMessage) {
+        console.error(errorMessage)
+        return alert('메세지 예약을 실패했습니다.')
+      }
     }
   }
 }
@@ -374,7 +396,10 @@ const updateReservedChat = async (chat: string) => {
       }
     } catch (error) {
       const errorMessage = chatStore.getErrorMessage(error)
-      if (errorMessage) return alert('메세지 예약 변경을 실패했습니다: ', errorMessage)
+      if (errorMessage) {
+        console.error(errorMessage)
+        return alert('메세지 예약 변경을 실패했습니다.')
+      }
     }
   }
 }
@@ -389,7 +414,33 @@ const setReservedChatsCount = async () => {
     allReservedChatsCount.value = 0
   }
 }
+// ============= 알람 관련 ==============
+const getAlarmsGroupByChatId = async () => {
+  try {
+    const userId = authStore.userInfo.id
 
+    const alarmList = await api.alarm.getAlarmsByFromUserId(userId)
+
+    alarmsGroupByChatId.value = groupBy(alarmList, 'chat_id')
+  } catch (error) {
+    const errorMessage = chatStore.getErrorMessage(error)
+    if (errorMessage) alert(errorMessage)
+  }
+}
+/*
+ * 알람 > 대화 상세 진입 시 Alarms 테이블에서 해당 채널에 내 새 메세지를 제거
+ */
+const deleteChannelMyAlarams = async () => {
+  try {
+    const userId = authStore.userInfo.id
+    await api.alarm.deleteAlarms(userId, channelId.value)
+  } catch (error) {
+    const errorMessage = chatStore.getErrorMessage(error)
+    if (errorMessage) console.error('나의 새 메세지 제거 실패: ', errorMessage)
+  }
+}
+
+// ============= 기타 ==============
 /**
  * 에디터 > 로드 시 인스턴스 저장
  */
@@ -426,22 +477,40 @@ const setMsgCreateAt = (
   if (dayjs(msg.created_at).format('YYYY-MM-DD HH:mm:00') === dayjs(afterChat.created_at).format('YYYY-MM-DD HH:mm:00')) return ''
   else return msg.created_at
 }
+/**
+ * 채팅 방 떠날 때 userList에 떠나는 시간 저장
+ */
+const setUserLeaveTime = async (myInfo = authStore.userInfo) => {
+  const channelUserList = channelInfo.value?.user_list || []
+  const newUserList: profileType[] = []
+  channelUserList.forEach(user => {
+    if (user.id === myInfo.id) newUserList.push({
+      ...user,
+      leaved_at: new Date()
+    })
+    else newUserList.push({ ...user })
+  })
+  await chatStore.updateChannelUserList(channelId.value, newUserList)
+}
+
+onUnmounted(() => {
+  setUserLeaveTime()
+  chatsWatcher.value?.unsubscribe()
+})
 
 </script>
 
 <style scoped>
-.chat-room-detail-wrap { padding: 10px 10px 400px; }
+.chat-room-detail-wrap { padding: var(--gap-s) var(--gap-s) 400px; }
 .chat-room-user-info {
   display: flex;
   align-items: center;
-  padding: 0 10px;
-  height: 30px;
-  line-height: 30px;
   background-color: var(--white);
-  font-size: 16px;
   gap: var(--gap-s);
+  /* margin-bottom: var(--gap-s); */
   .go-back-button { 
     color: #aaa;
+    font-size: 16px;
     cursor: pointer;
     &:hover { color: #666; }
   }
@@ -524,10 +593,9 @@ const setMsgCreateAt = (
 
 .help-txt {
   font-size: 14px;
-  color: #666;
   /* 예약 메세지 알람 */
   &.reserved-chat-noti {
-    padding: 5px 15px;
+    padding: 5px 0;
     display: flex;
     align-items: center;
     gap: var(--gap-xs);

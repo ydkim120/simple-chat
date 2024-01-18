@@ -99,13 +99,16 @@ export const useChatStore: any = defineStore({
       const { data: channels, error } = await sb
         .from('channels')
         .select()
+        // .select(`
+        //   *,
+        //   profiles(
+        //     user_name,
+        //     user_photo
+        //   )
+        // `)
         .contains('user_id_list', user_id_list)
         .order('updated_at', { ascending: true })
         .range(from, to)
-      // .stream(primaryKey: ['id'])
-      // .map((maps) => maps
-      //   .map((map) => Message.fromMap(map: map, myUserId: myUserId))
-      //   .toList());
       if (error) throw error
 
       return channels

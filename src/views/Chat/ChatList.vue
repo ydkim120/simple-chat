@@ -124,10 +124,10 @@ const getRecentChannel = async () => {
 }
 
 // 내 알람 목록 조회
-const getAlarms = async() => {
+const getAlarmsByTargetUserId = async() => {
   try {
     isGetChannelList.value = true
-    const alarmList = await api.alarm.getAlarms(myInfo.id)
+    const alarmList = await api.alarm.getAlarmsByTargetUserId(myInfo.id)
 
     alarmsGroupedByChannelId.value = groupBy(alarmList, 'channel_id')
   } catch (error) {
@@ -144,16 +144,13 @@ const routeToDetail = (channel_id: string) => {
     name: 'chat-detail',
     params: {
       id: channel_id
-    },
-    state: {
-      visitTimeStamp: +new Date()
     }
   })
 }
 
 onMounted(async () => {
   // if (authStore.userInfo) userEmail.value = authStore.userInfo.email
-  await getAlarms()
+  await getAlarmsByTargetUserId()
   await getRecentChannel()
 
   watchChannelList()
@@ -182,7 +179,7 @@ const watchAlarms = () => {
       'postgres_changes',
       { event: '*', schema: 'public', table: 'alarms' },
       async () => {
-        await getAlarms()
+        await getAlarmsByTargetUserId()
       }
     )
   alarmsWatcher.value.subscribe()

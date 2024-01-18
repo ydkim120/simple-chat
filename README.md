@@ -29,9 +29,10 @@ Vue3.0 + Typescript + Supabase로 개발 중입니다. 🌝
 * 이메일 기반 회원가입 (이메일 인증 후 서비스 이용 가능)
 * 사용자 정보 수정 (비밀번호, 프로필 사진, 닉네임)
 * 사용자 찾기
-* 실시간 메신저 송수신
+* 실시간 메세지 송수신
+* 새 메세지 알람
 * 예약 메세지
-* 그룹 채팅
+
 
 
 ## Local Server
@@ -56,7 +57,8 @@ npm run dev
       - RealTime > Postgres Changes을 통해 테이블 변경 감지
       - RealTime > Presence로 사용자 실시간 활동 상태(온/오프라인) 감지
       - cron: Job Scheduling 기능 예약 메세지 로직 구현
-  
+      - trigger를 통한 새 메세지 알람 기능
+    * 회원 탈퇴 기능
 
 <!-- ## Learning Objectives -->
 

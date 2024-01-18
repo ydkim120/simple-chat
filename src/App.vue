@@ -1,8 +1,11 @@
 <template>
   <div>
-   <router-view />
+    <router-view />
 
-   <!-- <ConfirmDialog /> -->
+    <ConfirmDialog 
+      style="min-width: 300px"
+      :closable="false"
+    />
   </div>
 </template>
 
@@ -10,7 +13,7 @@
 import { onMounted } from 'vue'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { useCookies } from "vue3-cookies"
-// import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const store = useUserAuthStore()
 

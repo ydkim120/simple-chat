@@ -10,6 +10,7 @@ import PrimeVue from 'primevue/config'
 import 'primevue/resources/themes/saga-blue/theme.css' //theme
 import 'primevue/resources/primevue.min.css' //core CSS
 import 'primeicons/primeicons.css' //icons
+import ConfirmationService from 'primevue/confirmationservice';
 import Button from 'primevue/button'
 import SplitButton from 'primevue/splitbutton'
 import InputText from 'primevue/inputtext'
@@ -24,9 +25,12 @@ import Skeleton from 'primevue/skeleton'
 import Chip from 'primevue/chip'
 import Tooltip from 'primevue/tooltip'
 import Calendar from 'primevue/calendar'
+import Badge from 'primevue/badge'
 
 import Editor from 'primevue/editor'
 import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
+
+// import confirm from '@/utils/ConfirmDialog'
 
 const pinia = createPinia()
 
@@ -34,6 +38,7 @@ createApp(App)
   .use(router)
   .use(pinia)
   .use(PrimeVue, { ripple: true })
+  .use(ConfirmationService)
   .component('Button', Button)
   .component('SplitButton', SplitButton)
   .component('InputText', InputText)
@@ -48,8 +53,11 @@ createApp(App)
   .component('Skeleton', Skeleton)
   .component('Chip', Chip)
   .component('Calendar', Calendar)
+  .component('Badge', Badge)
   .component('UserProfilePhoto', UserProfilePhoto)
   .directive('tooltip', Tooltip)
   .mount('#app')
+
+// App.config.globalProperties.$confirm = confirm
 
 
