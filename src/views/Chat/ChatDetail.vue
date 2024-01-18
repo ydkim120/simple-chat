@@ -253,7 +253,8 @@ const watchChats = () => {
       },
       async () => {
         await getAllChats()
-        await setReservedChatsCount()
+        await setReservedChatsCount() // 채널의 예약메세지 갯수 조회
+        await deleteChannelMyAlarams() // 채널의 내가 잃지 않은 메세지 제거 (알람)
         await chatStore.updateChannelSummary(channelId.value, lastChat.value)
       }
     )
@@ -428,7 +429,7 @@ const getAlarmsGroupByChatId = async () => {
   }
 }
 /*
- * 알람 > 대화 상세 진입 시 Alarms 테이블에서 해당 채널에 내 새 메세지를 제거
+ * 알람 > Alarms 테이블에서 해당 채널에 내 새 메세지를 제거
  */
 const deleteChannelMyAlarams = async () => {
   try {

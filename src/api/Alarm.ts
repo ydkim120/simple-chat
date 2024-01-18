@@ -43,7 +43,7 @@ export default {
     }
   },
   /**
-  * 채팅방 진입 시, 알람 메세지를 삭제합니다.
+  * 알람 메세지를 삭제합니다. (요청 시간 이전에 생성된 알람 메세지만 삭제합니다.)
   * @param {String} userId 
   * @param {String} channelId
   */
@@ -53,6 +53,7 @@ export default {
       .delete()
       .eq('target_user_id', userId)
       .eq('channel_id', channelId)
+      .lt('created_at', new Date().toISOString())
     if (error) throw error
     return true
   }
