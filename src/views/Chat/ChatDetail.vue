@@ -5,10 +5,17 @@
         class="pi pi-chevron-left go-back-button"
         @click="router.push({ name: 'chat-list'})"
       />
-      <h3 v-if="channelInfo">{{ channelInfo.usersNameTxt }}</h3>
+      <h3 v-if="channelInfo">
+        {{ channelInfo.usersNameTxt || '대화 상대 없음' }}
+      </h3>
+
+      <ChatRoomEtcOptions 
+        :channel-info="channelInfo" 
+        class="etc-button" 
+      />
     </div>
     <div
-      class="old-chat-list-wrap"
+      class="all-chat-list-wrap"
       :class="{'-long': allReservedChatsCount }"
       ref="chatListWrapRef"
     >
@@ -130,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { supabase as sb } from '@/supabase'
 import { singleChatData, singleChannelData, profileType } from '@/@types'
@@ -138,17 +145,18 @@ import dayjs from 'dayjs'
 import api from '@/api'
 import { groupBy } from 'lodash'
 
-import { useChatStore as cStore } from '@/store/Chat.store'
+import { useChatStore } from '@/store/Chat.store'
 import { useUserAuthStore } from '@/store/Auth.store'
 
 import ChatBubble from '@/components/ChatBubble.vue'
 import SetDateTimeDialog from '@/components/Dialog/SetDateTimeDialog.vue'
+import ChatRoomEtcOptions from '@/components/ChatRoomEtcOptions.vue'
 
 const router = useRouter()
 const route = useRoute()
 
 const authStore = useUserAuthStore()
-const chatStore = cStore()
+const chatStore = useChatStore()
 
 // const userInfo = ref(null)
 const channelInfo = ref<singleChannelData | null>(null)
@@ -485,7 +493,7 @@ const setUserLeaveTime = async (myInfo = authStore.userInfo) => {
   const channelUserList = channelInfo.value?.user_list || []
   const newUserList: profileType[] = []
   channelUserList.forEach(user => {
-    if (user.id === myInfo.id) newUserList.push({
+    if (user.id === myInfo?.id) newUserList.push({
       ...user,
       leaved_at: new Date()
     })
@@ -494,7 +502,7 @@ const setUserLeaveTime = async (myInfo = authStore.userInfo) => {
   await chatStore.updateChannelUserList(channelId.value, newUserList)
 }
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   setUserLeaveTime()
   chatsWatcher.value?.unsubscribe()
 })
@@ -504,19 +512,26 @@ onUnmounted(() => {
 <style scoped>
 .chat-room-detail-wrap { padding: var(--gap-s) var(--gap-s) 400px; }
 .chat-room-user-info {
+  position: relative;
   display: flex;
   align-items: center;
   background-color: var(--white);
   gap: var(--gap-s);
   /* margin-bottom: var(--gap-s); */
   .go-back-button { 
-    color: #aaa;
+    color: var(--gray);
     font-size: 16px;
     cursor: pointer;
     &:hover { color: #666; }
   }
+  .etc-button {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+  }
 }
-.old-chat-list-wrap {
+.all-chat-list-wrap {
   overflow-y: auto;
   height: calc(100vh - 480px);
   &.-long { height: calc(100vh - 500px); }

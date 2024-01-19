@@ -1,3 +1,4 @@
+import { profileType } from './../@types/auth.d';
 import { defineStore } from 'pinia'
 import { useUserAuthStore } from './Auth.store'
 import { supabase as sb } from '@/supabase'
@@ -141,24 +142,40 @@ export const useChatStore: any = defineStore({
         user_id_list,
         user_list,
         summary: '',
+        summary_created_at: new Date(Date.now()),
         is_me: user_id_list.length === 1 && user_id_list[0] === userInfo?.id
       }
       const { data, error } = await sb
         .from('channels')
         .insert(payload)
       if (error) throw error
+     
       return data
     },
-    // 채널 summary 업데이트
+    // 채널 업데이트 > summary
     async updateChannelSummary(channel_id = '', summary = ''){
       const { data, error } = await sb
         .from('channels')
         .update({
-          summary
+          summary,
+          summary_created_at: new Date(Date.now())
         })
         .eq('channel_id', channel_id)
       if (error) throw error
       return data
+    },
+    // 채널 업데이트 > 참여 유저 정보 업데이트
+    async updateChannelUserList (channel_id = '', userList: profileType[] = []) {
+      const userIdList = userList.map(user => user.id)
+      const { error } = await sb
+        .from('channels')
+        .update({
+          user_list: userList,
+          user_id_list: userIdList
+        })
+        .eq('channel_id', channel_id)
+      if (error) throw error
+      return true
     },
     // // 채널 찾기 (참여 유저 ID 목록에 따라)
     // async getChannelListByUserIdList (userIdList = []) {

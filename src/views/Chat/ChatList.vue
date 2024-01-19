@@ -12,7 +12,7 @@
           :key="ch.channel_id"
           @click="routeToDetail(ch.channel_id)"
         >
-          <ol>
+          <ol v-if="ch.userPhotoList && ch.userPhotoList.length">
             <li 
               v-for="(photo, idx) in ch.userPhotoList" 
               :key="`userProfilePhoto_${idx}`"
@@ -20,13 +20,23 @@
               <UserProfilePhoto 
                 :src="photo"
                 use-online
-                is-online
+                :is-online="ch.userOnlineStatusList 
+                  ? ch.userOnlineStatusList[idx] === 'online'
+                  : false"
                 width="80px"
                 height="80px"
                 empty-icon-font-size="50px"
               />
             </li>
           </ol>
+          <UserProfilePhoto
+            v-else
+            :use-online="false"
+            width="80px"
+            height="80px"
+            empty-icon-font-size="50px"
+          />
+
           <div class="channel-content">
             <div class="channel-user-name-wrap">
               <span
@@ -36,7 +46,7 @@
                 나
               </span>
               <b class="channel-user-name">
-                {{ ch.usersNameTxt }}
+                {{ ch.usersNameTxt || '대화 상대 없음' }}
               </b>
             </div>
             <div class="channel-summary" v-text="ch.summaryTxt" />
@@ -107,7 +117,11 @@ const getRecentChannel = async () => {
           userPhotoList: isMe
             ? [myInfo?.photo]
             : c.user_list.filter((user: profileType) => user.id !== myInfo.id)
-                .map(item => item.user_photo || '')
+                .map(item => item.user_photo || ''),
+          userOnlineStatusList: isMe
+            ? ['online']
+            : c.user_list.filter((user: profileType) => user.id !== myInfo.id)
+              .map(item => item.status || 'offline'),
         }
       })
     channelList.value = channels

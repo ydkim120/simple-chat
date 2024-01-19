@@ -26,6 +26,8 @@ import Chip from 'primevue/chip'
 import Tooltip from 'primevue/tooltip'
 import Calendar from 'primevue/calendar'
 import Badge from 'primevue/badge'
+import OverlayPanel from 'primevue/overlaypanel'
+import Listbox from 'primevue/Listbox'
 
 import Editor from 'primevue/editor'
 import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
@@ -54,6 +56,8 @@ createApp(App)
   .component('Chip', Chip)
   .component('Calendar', Calendar)
   .component('Badge', Badge)
+  .component('OverlayPanel', OverlayPanel)
+  .component('Listbox', Listbox)
   .component('UserProfilePhoto', UserProfilePhoto)
   .directive('tooltip', Tooltip)
   .mount('#app')
