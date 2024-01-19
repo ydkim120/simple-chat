@@ -11,7 +11,8 @@
 
       <ChatRoomEtcOptions 
         :channel-info="channelInfo" 
-        class="etc-button" 
+        class="etc-button"
+        @after-leave="() => setChannelInfo(channelId)"
       />
     </div>
     <div

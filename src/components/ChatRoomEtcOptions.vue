@@ -42,6 +42,10 @@ const props = withDefaults(defineProps<Props>(), {
   channelInfo: null
 })
 
+const emit = defineEmits<{
+  (e: 'after-leave'): void
+}>()
+
 const router = useRouter()
 const authStore = useUserAuthStore()
 const chatStore = useChatStore()
@@ -88,6 +92,7 @@ const leaveChat = async (channelInfo = props.channelInfo) => {
     const newUserList = user_list.filter(user => user.id !== myId)
     const result = await chatStore.updateChannelUserList(channel_id, newUserList)
     if (result) {
+      emit('after-leave')
       router.push({
         name: 'chat-list'
       })
