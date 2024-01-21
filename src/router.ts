@@ -1,19 +1,23 @@
 import { createWebHistory, createRouter } from "vue-router"
 import { useUserAuthStore } from '@/store/Auth.store'
-import { supabase as sb } from '@/supabase'
 
 
 const routes = [
   {
     path: "/",
-    name: "login-user",
-    component: () => import('./views/Auth/LoginUser.vue')
+    name: "home",
+    component: () => import('./views/Landing.vue')
   },
-  {
-    path: "/register",
-    name: "register-user",
-    component: () => import('./views/Auth/RegisterUser.vue')
-  },
+  // {
+  //   path: "/login",
+  //   name: "login-user",
+  //   component: () => import('./views/Auth/LoginUser.vue')
+  // },
+  // {
+  //   path: "/register",
+  //   name: "register-user",
+  //   component: () => import('./views/Auth/RegisterUser.vue')
+  // },
   {
     path: "/chat",
     name: "chat-main",
@@ -86,8 +90,8 @@ router.beforeEach(async (to, from, next) => {
       next()
       return
     } else return next({ name: 'login-user' })
-  } else if (to.name !== 'login-user' && to.name !== 'register-user' ) {
-    next({ name: 'login-user' })
+  } else if (to?.name !== 'home') {
+    next({ name: 'home' })
   } else next()
 })
 

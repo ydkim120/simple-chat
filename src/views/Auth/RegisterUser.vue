@@ -1,7 +1,7 @@
 <template>
   <div class="register-user-wrap">
     <div class="register-form" v-loading="loginLoading">
-      <h3>이메일로 회원가입</h3>
+      <!-- <h3>이메일로 회원가입</h3> -->
       <template v-if="!isPassed" >
         <div class="register-form-photo">
           <FileUpload
@@ -38,7 +38,10 @@
                   :src="userPhoto || ''"
                   :alt="'profilePhoto'"
                 />
-                <span v-else class="default-photo">
+                <span 
+                  v-else 
+                  class="default-photo"
+                >
                   <i class="pi pi-user user-icon" />
                 </span>
               </div>
@@ -48,7 +51,7 @@
         <ul class="register-form-input-list">
           <li>
             <p class="register-form-field">
-              <span class="-required">Email</span>
+              <span class="-required">이메일</span>
             </p>
             <InputText
               class="register-form-input"
@@ -91,7 +94,7 @@
           </li>
         </ul>
         <Button @click="handleRegisterUser" label="회원가입 승인 메일 보내기" />
-        <ul class="banner-list">
+        <!-- <ul class="banner-list">
           <li>
             계정이 이미 있으신가요?&nbsp;
             <router-link
@@ -101,7 +104,7 @@
               로그인
             </router-link>
           </li>
-        </ul>
+        </ul> -->
       </template>
       <template v-else >
         <InlineMessage
@@ -110,12 +113,11 @@
         >
           회원가입 승인 링크가 이메일로 전송되었습니다.
         </InlineMessage>
-        <router-link
-          :to="{ name: 'login-user' }"
-          class="banner-link"
-        >
-          로그인 하러 가기
-        </router-link>
+        <Button 
+          severity="secondary" 
+          label="로그인 하러 가기" 
+          @click="handleClose"
+        />
       </template>
     </div>
   </div>
@@ -125,6 +127,7 @@
 import { ref } from 'vue'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { regExpStore } from '@/store/RegExp.store'
+import { useConfirm } from "primevue/useconfirm"
 
 const store = useUserAuthStore()
 const regExpTest = regExpStore()
@@ -137,6 +140,20 @@ const userPhoto = ref()
 const userPhotoFile = ref<File | null>(null)
 const isPassed = ref(false)
 
+const confirmDialog = useConfirm()
+const confirm = (message: string, acceptFunc: Function) => {
+  let flag = false
+  confirmDialog.require({
+    message,
+    acceptLabel: '확인',
+    rejectLabel: '취소',
+    rejectClass: 'p-button-secondary',
+    accept: () => acceptFunc() || false,
+    reject: () => flag = false
+  })
+  return flag
+}
+
 const handleRegisterUser = async () => {
   try {
     if (!email.value) throw new Error('VALUE_IS_NULL: EMAIL')
@@ -144,21 +161,22 @@ const handleRegisterUser = async () => {
     if (!password.value) throw new Error('VALUE_IS_NULL: PASSWORD')
     if (!userName.value) throw new Error('VALUE_IS_NULL: USER_NAME')
 
-    const done = confirm('입력하신 이메일 정보로 회원가입 승인 절차를 계속하시겠습니까?')
-    if(!done) return
+    confirm('입력하신 이메일 정보로 회원가입 승인 절차를 계속하시겠습니까?', async () => {
 
-    loginLoading.value = true
-
-    const { data, error } = await store.registerUser({
-      email: email.value,
-      password: password.value,
-      user_name: userName.value,
-      user_photo: userPhotoFile.value
+      loginLoading.value = true
+  
+      const { data, error } = await store.registerUser({
+        email: email.value,
+        password: password.value,
+        user_name: userName.value,
+        user_photo: userPhotoFile.value
+      })
+      console.log('data:: ', data)
+      if (!error) {
+        isPassed.value = true
+      }
     })
-    console.log('data:: ', data)
-    if (!error) {
-      isPassed.value = true
-    }
+
   } catch (error) {
     const errorMessage = store.getErrorMessage(error)
     if(errorMessage) alert(errorMessage)
@@ -180,27 +198,32 @@ const customBase64Uploader = async (event) => {
   }
 }
 
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
+const handleClose = () => emit('close')
+
 </script>
 
 <style scoped>
 .register-user-wrap {
-  position: absolute;
+  /* position: absolute; */
   width: 100%;
   height: 100%;
-  background-color: var(--white);
 }
 .register-form {
-  position: fixed;
+  /* position: fixed;
   top: 50%;
-  left: 50%;
+  left: 50%; */
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 40px;
-  box-shadow: 0 4px 20px 0 rgba(224, 224, 224, 0.7);
-  width: 500px;
-  transform: translate(-50%, -50%);
-  background-color: var(--lightest-gray);
+  padding: 0 40px 20px 40px;
+  /* box-shadow: 0 4px 20px 0 rgba(224, 224, 224, 0.7); */
+  /* width: 500px; */
+  /* transform: translate(-50%, -50%); */
+  background-color: var(--white);
 
   .register-form-photo {
     margin: 40px auto 0;

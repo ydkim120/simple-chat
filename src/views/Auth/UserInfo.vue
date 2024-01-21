@@ -39,9 +39,10 @@
         v-model:visible="activePreviewPhoto" 
         header='사진 미리보기'
         :style="{ width: '300px' }"
-        modal 
+        modal
+        dismissable-mask
       >
-        <UserProfilePhoto 
+        <UserProfilePhoto
           :src="userPhotoPreview || ''"
           width="180px"
           height="180px"
@@ -152,7 +153,8 @@
             <Button
               v-if="!isEditUserName"
               @click="isEditUserName = true" 
-              icon="pi pi-pencil" 
+              icon="pi pi-pencil"
+              size="small"
               label="수정"
             />
             <template v-else>
@@ -165,6 +167,7 @@
                 }" 
                 severity="secondary"
                 label="취소"
+                size="small"
               />
               <Button
                 @click="() => {

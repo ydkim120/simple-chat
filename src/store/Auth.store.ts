@@ -104,11 +104,14 @@ export const useUserAuthStore: any = defineStore({
     // 로그아웃
     async logoutUser () {
       const { error } = await sb.auth.signOut()
+      if (this.userInfo?.email) await api.presence.setPresenceOnLogout(this.userInfo?.email)
+      // await api.presence.presenceUnsubscription()
+
       this.userInfo = null
       this.isAuth = false
       cookies.remove('access_token')
       cookies.remove('refresh_token')
-      router.push({ name: 'login-user' })
+      router.push({ name: 'home' })
       if (error) throw error
       // localStorage.removeItem("todo");
       // this.message = "";
@@ -127,6 +130,14 @@ export const useUserAuthStore: any = defineStore({
         this.setUserInfo(access_token)
         return data
       } catch(error) { throw error }
+    },
+
+    // 사용자 제거
+    async deleteUser(userId: string) {
+      const { error } = await sb.auth.admin.deleteUser(userId)
+      if (error) throw error
+
+      return true
     },
 
     getErrorMessage (error: Error | undefined) {

@@ -1,7 +1,7 @@
 <template>
   <div class="login-user-wrap">
     <div class="login-form">
-      <h3>Email 로그인</h3>
+      <!-- <h3>Email 로그인</h3> -->
       <div class="login-form-input-wrap">
         <InputText
           v-model="email"
@@ -18,8 +18,10 @@
           toggleMask
         />
       </div>
-      <Button @click="handleLoginEmail" label="로그인" />
-      <ul class="banner-list">
+      <div class="button-area center">
+        <Button @click="handleLoginEmail" label="로그인" />
+      </div>
+      <!-- <ul class="banner-list">
         <li>
           <router-link 
             :to="{ name: 'register-user'}"
@@ -28,7 +30,7 @@
             회원가입
           </router-link>
         </li>
-      </ul>
+      </ul> -->
     </div>
   </div>
 </template>
@@ -38,6 +40,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { regExpStore } from '@/store/RegExp.store'
+import api from '@/api'
 
 const router = useRouter()
 
@@ -47,6 +50,10 @@ const regExpTest = regExpStore()
 const loginLoading = ref(false)
 const email = ref('')
 const password = ref('')
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 const handleLoginEmail = async () => {
   try {
@@ -62,25 +69,34 @@ const handleLoginEmail = async () => {
     })
     console.log('data:: ', data)
     if (!error) {
+      // await api.presence.presenceSubscription()
       alert('Check your email for the login!')
-      return router.push({ name: 'chat-main' })
+      handleClose()
+      await api.presence.setPresenceOnLogin(email.value)
+      router.push({ name: 'chat-main' })
+
     }
   } catch (error) {
     const errorMessage = store.getErrorMessage(error)
     if (errorMessage) alert(errorMessage)
   } finally { loginLoading.value = false }
 }
+
+
+
+const handleClose = () => emit('close')
+
 </script>
 
 <style scoped>
 .login-user-wrap {
-  position: absolute;
+  /* position: absolute; */
   width: 100%;
   height: 100%;
   background: var(--white);
 }
 .login-form {
-  position: fixed;
+  /* position: fixed;
   top: 50%;
   left: 50%;
   display: flex;
@@ -90,7 +106,7 @@ const handleLoginEmail = async () => {
   box-shadow: 0 4px 20px 0 rgba(224, 224, 224, 0.7);
   width: 500px;
   transform: translate(-50%, -50%);
-  background-color: var(--lightest-gray);
+  background-color: var(--lightest-gray); */
 
   .login-form-input-wrap {
     display: flex;

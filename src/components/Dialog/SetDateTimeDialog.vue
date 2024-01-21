@@ -4,6 +4,7 @@
     :header="props.header"
     :style="{ width: '500px' }"
     modal
+    dismissable-mask
   >
     <div class="flex-auto reserve-time-wrap">
       <Calendar
