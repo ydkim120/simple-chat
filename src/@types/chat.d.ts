@@ -21,7 +21,8 @@ export interface singleChannelData {
 
   usersNameTxt?: string,
   summaryTxt?: string,
-  userPhotoList?: string[]
+  userPhotoList?: string[],
+  userOnlineStatusList?: string[]
 }
 export interface singleReservedChatData {
   id: string

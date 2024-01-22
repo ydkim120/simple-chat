@@ -8,7 +8,7 @@
         })"
       >
        <i class="pi pi-send" style="font-size: 1.2rem"></i>
-        Simple Messenger
+        Simple Talk
       </a>
     </div>
     <AutoComplete
@@ -23,11 +23,14 @@
     >
       <template #option="slotProps">
         <div class="search-user-option">
-          <UserProfilePhoto 
+          <UserProfilePhoto
+            :loading="isGetUserList"
             :src="slotProps.option.user_photo || ''"
+            :is-online="slotProps.option.status === 'online'"
             width="40px"
             height="40px"
             empty-icon-font-size="30px"
+            use-online
           />
           <Chip
             v-if="slotProps.option.id === authStore.userInfo.id"
@@ -52,6 +55,7 @@ import { ref, onMounted, watch } from "vue"
 import { useRouter } from 'vue-router'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { useChatStore as chatDataStore } from '@/store/Chat.store'
+// import { supabase as sb } from '@/supabase'
 
 import fuzzyStringSearch from '@/utils/FuzzyStringSearch'
 
@@ -65,6 +69,8 @@ type profileType = {
 const router = useRouter()
 const authStore = useUserAuthStore()
 const chatStore = chatDataStore()
+
+const isGetUserList = ref(false)
 
 onMounted(async () => {
   const allUsersData = await authStore.getAllUsers() || []
@@ -101,6 +107,7 @@ watch(selectedUser, async (val) => {
 
 const goToChannelDetail = async (partnerId: string) => {
   try {
+    isGetUserList.value = true
     let channelId
     let findedChannel = await chatStore.getChannelList([partnerId])
 
@@ -121,7 +128,7 @@ const goToChannelDetail = async (partnerId: string) => {
   } catch (error) {
     const errorMessage = chatStore.getErrorMessage(error)
     if (errorMessage) alert(errorMessage)
-  }
+  } finally { isGetUserList.value = false }
 }
 </script>
 
@@ -139,7 +146,7 @@ const goToChannelDetail = async (partnerId: string) => {
   font-weight: 900;
   color: var(--primary);
   text-transform: uppercase;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   width: var(--side-nav-width);
   line-height: 35px;
   > a { cursor: pointer; }

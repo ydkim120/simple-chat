@@ -11,18 +11,23 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import ChatHeaderSearch from '@/components/ChatHeaderSearch.vue'
 import ChatSideNav from '@/components/ChatSideNav.vue'
 import { useChatStore } from '@/store/Chat.store'
+// import api from '@/api'
 
 const store = useChatStore()
 
 onMounted(() => {
   init()
 })
+onUnmounted(async () => {
+  // await api.presence.presenceUnsubscription()
+})
 const init = async() => {
   await store.getChannelList ()
+  // await api.presence.presenceSubscription()
 }
 </script>
 
