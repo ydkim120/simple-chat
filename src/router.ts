@@ -74,25 +74,20 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useUserAuthStore()
 
-  if (to.meta.requiresAuth) {
-    const { session } = await authStore.getSession()
+  const { session } = await authStore.getSession()
 
-    if (session) await authStore.saveToken(session)
-    else {
-      const { data } = await authStore.refreshSession()
-      if (!data?.user) {
-        // alert('세션이 만료되었습니다. 다시 로그인 해주세요.')
-        return await authStore.logoutUser()
-      } else await authStore.saveToken(data.session)
-    }
-
-    if (authStore.isAuth && authStore.userInfo) {
-      next()
-      return
-    } else return next({ name: 'login-user' })
-  } else if (to?.name !== 'home') {
-    next({ name: 'home' })
-  } else next()
+  if (session) await authStore.saveToken(session)
+  else if (authStore.isAuth) {
+    const { data } = await authStore.refreshSession()
+    if (!data?.user) {
+      // alert('세션이 만료되었습니다. 다시 로그인 해주세요.')
+      return await authStore.logoutUser()
+    } else await authStore.saveToken(data.session)
+  }
+  
+  if (authStore.isAuth) return next() 
+  else if (to?.name !== 'home') return next({ name: 'home' })
+  else next()
 })
 
 export default router;

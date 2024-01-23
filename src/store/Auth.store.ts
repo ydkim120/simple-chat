@@ -75,7 +75,11 @@ export const useUserAuthStore: any = defineStore({
       if (!accessToken) return 
 
       const { data: { user }, error } = await sb.auth.getUser(accessToken)
-      if (error) this.userInfo = null
+      if (error) {
+        this.userInfo = null
+        this.isAuth = false
+      }
+      this.isAuth = true
       this.userInfo = JSON.parse(JSON.stringify(user))
 
       await this.setUserPhotoInfo()
@@ -187,8 +191,6 @@ export const useUserAuthStore: any = defineStore({
     // 토큰 만료: 1일
     async saveToken (session: sessionObjType) {
       if (session) {
-        console.log('session::', session)
-
         const { access_token, refresh_token }: sessionObjType = session
         cookies.set('access_token', access_token, '1d')
         cookies.set('refresh_token', refresh_token, '1d')
@@ -228,7 +230,6 @@ export const useUserAuthStore: any = defineStore({
       const { data: { session }, error } = result
 
       if (error) throw error
-      this.isAuth = true
       return { session }
     },
     // 세션 refresh
