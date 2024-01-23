@@ -29,7 +29,8 @@
           />
         </template>
         <template #content>
-          <UserProfilePhoto 
+          <UserProfilePhoto
+            :loading="isLoading || !authStore.isUserInfo"
             :src="userPhoto"
           />
         </template>
@@ -78,15 +79,17 @@
           비밀번호
         </p>
         <Button
+          size="small"
           icon="pi pi-pencil" 
           label="비밀번호 재설정"
           @click="activeChangePasswordDialog = true"
         />
-        <Dialog 
+        <Dialog
           v-model:visible="activeChangePasswordDialog" 
           header='새 비밀번호 설정'
           :style="{ width: '500px' }"
-          modal 
+          modal
+          dismissable-mask
         >
           <ul class="user-info-list">
             <li class="user-info-field">
@@ -175,9 +178,24 @@
                 }" 
                 icon="pi pi-check" 
                 label="저장"
+                size="small"
               />
             </template>
           </div>
+        </div>
+      </li>
+      <li class="user-delete-wrap">
+        <p class="user-info-field">
+          회원 탈퇴
+        </p>
+        <div class="user-delete-form">
+          <Button
+            label="탈퇴"
+            size="small"
+            severity="secondary"
+            @click="confirmDeleteAccount"
+          />
+          <small class="help-txt">탈퇴 시 모든 메신저 내용이 삭제되며 복구되지 않습니다.</small>
         </div>
       </li>
     </ul>
@@ -189,8 +207,9 @@ import { ref, onMounted, getCurrentInstance } from 'vue'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { userInfoType } from '@/@types'
 import { useProfilePhotoStore } from '@/store/ProfilePhoto.store'
+import { useConfirm } from "primevue/useconfirm"
 
-const instance = getCurrentInstance()
+const { proxy } = getCurrentInstance()
 
 const authStore = useUserAuthStore()
 const photoStore = useProfilePhotoStore()
@@ -208,6 +227,21 @@ const userPhoto = ref()
 const userPhotoFile = ref<File | null>(null)
 const userPhotoPreview = ref()
 const userPhotoPreviewFile = ref<File | null>(null)
+
+const isLoading = ref(false)
+
+const confirmDialog = useConfirm()
+
+const confirm = (message: string, acceptFunc: Function) => {
+  confirmDialog.require({
+    message,
+    acceptLabel: '확인',
+    rejectLabel: '취소',
+    rejectClass: 'p-button-secondary',
+    accept: () => acceptFunc() || false,
+    reject: () => false
+  })
+}
 
 onMounted( () => {
   setUserInfo()
@@ -238,6 +272,8 @@ const changePassword = async (password: string) => {
     if(!newPasswordRe.value?.trim()) return alert('새 비밀번호 확인을 입력하세요.')
     if (password !== newPasswordRe.value) return alert('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.')
 
+    isLoading.value = true
+
     const { data } = await authStore.updateUserInfo({ password })
     if (data) {
       alert('새 비밀번호로 변경되었습니다.')
@@ -248,12 +284,14 @@ const changePassword = async (password: string) => {
   } catch (error) {
     const errorMessage = authStore.getErrorMessage(error)
     if (errorMessage) alert(errorMessage)
-  }
+  } finally { isLoading.value = false }
 }
 
 const changeUserName = async (name: string) => {
   try {
     if (!name?.trim()) return alert('닉네임을 입력하세요.')
+
+    isLoading.value = true
 
     const { data } = await authStore.updateUserInfo({ data: { 
       user_name: name 
@@ -267,7 +305,7 @@ const changeUserName = async (name: string) => {
   } catch (error) {
     const errorMessage = authStore.getErrorMessage(error)
     if (errorMessage) alert(errorMessage)
-  }
+  } finally { isLoading.value = false }
 }
 
 const customBase64Uploader = async (event) => {
@@ -292,43 +330,58 @@ const customBase64Uploader = async (event) => {
 const saveProfilePhoto = async () => {
   try {
     const isDeleted = !userPhotoPreview.value 
-    const flag = isDeleted
-      ? confirm('프로필 사진을 삭제하시겠습니까?')
-      : confirm('프로필 사진을 업로드 하시겠습니까?')
-    if (!flag) return false
+    const confirmMessage = isDeleted
+      ? '프로필 사진을 삭제하시겠습니까?'
+      : '프로필 사진을 업로드 하시겠습니까?'
+    
+      isLoading.value = true
 
-    let result
-    if (!userPhoto.value) {
-      const { data } = await photoStore.registerUserPhoto(
-        userPhotoPreviewFile.value,
-        email.value
-      )
-      result = data
-    } else {
-      const { data } = await photoStore.updateUserPhoto(
-        isDeleted ? '' : userPhotoPreviewFile.value, 
-        email.value
-      )
-      result = data
-    }
-
-    if (result) {
-      await authStore.setUserPhotoInfo()
-      activePreviewPhoto.value = false
-      userPhoto.value = userPhotoPreview.value
-      userPhotoFile.value = userPhotoPreviewFile.value
-      userPhotoPreview.value = ''
-      userPhotoPreviewFile.value = null
-      setUserInfo()
-      isDeleted ? alert('프로필 사진을 삭제했습니다.') : alert('프로필 사진을 변경했습니다.')
-      return instance?.proxy?.$forceUpdate()
-    }
+    confirm (confirmMessage, async () => {
+      let result
+      if (!userPhoto.value) {
+        const { data } = await photoStore.registerUserPhoto(
+          userPhotoPreviewFile.value,
+          email.value
+        )
+        result = data
+      } else {
+        const { data } = await photoStore.updateUserPhoto(
+          isDeleted ? '' : userPhotoPreviewFile.value, 
+          email.value
+        )
+        result = data
+      }
+  
+      if (result) {
+        await authStore.setUserPhotoInfo()
+        activePreviewPhoto.value = false
+        userPhoto.value = userPhotoPreview.value
+        userPhotoFile.value = userPhotoPreviewFile.value
+        userPhotoPreview.value = ''
+        userPhotoPreviewFile.value = null
+        setUserInfo()
+        isDeleted ? alert('프로필 사진을 삭제했습니다.') : alert('프로필 사진을 변경했습니다.')
+        return proxy?.$forceUpdate()
+      }
+    })
   } catch (error) {
     const errorMessage = authStore.getErrorMessage(error)
     if (errorMessage) alert(errorMessage)
-  }
+  } finally { isLoading.value = false }
 }
 
+/*
+ * 계정 탈퇴 
+ */
+const confirmDeleteAccount = async () => {
+  confirm('정말로 탈퇴 하시겠습니까?', async () => {
+    const result = await authStore.deleteUser(userInfoData.value?.id)
+    if (result) {
+      alert('탈퇴처리가 정상적으로 되었습니다.')
+    }
+  })
+
+}
 </script>
 
 <style scoped>
@@ -356,6 +409,7 @@ const saveProfilePhoto = async () => {
     align-items: center;
     gap: var(--gap-s);
     width: 100%;
+    height: 30px;
     & .user-info-field {
       text-align: left;
       min-width: 120px;
@@ -368,6 +422,18 @@ const saveProfilePhoto = async () => {
         align-items: center;
         gap: var(--gap-s);
       }
+    }
+  }
+}
+.user-delete-wrap {
+  margin-top: var(--gap);
+  .user-delete-form {
+    position: relative;
+    width: 100%;
+    .help-txt {
+      position: absolute;
+      top: calc(100% + 5px);
+      left: 0;
     }
   }
 }

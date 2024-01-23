@@ -82,3 +82,23 @@
 .p-badge {
   &.p-badge-warning { background-color: var(--pastel-orange); color: var(--white); }
 }
+
+/* OverlayPanel */
+.p-overlaypanel {
+  .p-listbox {
+    border: none !important;
+  }
+}
+
+/* ListBox */
+.p-listbox {
+  &.p-focus { border: none; outline: none; box-shadow: none; }
+  .p-listbox-list-wrapper {
+  
+  }
+}
+
+/* ConfirmDialog */
+.p-confirm-dialog {
+  .p-dialog-content { white-space: pre;}
+}
