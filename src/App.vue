@@ -5,6 +5,7 @@
     <ConfirmDialog 
       style="min-width: 300px"
       :closable="false"
+      dismissable-mask
     />
   </div>
 </template>
@@ -13,7 +14,6 @@
 import { onMounted } from 'vue'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { useCookies } from "vue3-cookies"
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const store = useUserAuthStore()
 

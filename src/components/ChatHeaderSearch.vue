@@ -4,7 +4,7 @@
     <div class="logo-wrap">
       <a 
         @click="() => router.push({
-          name: 'chat-list'
+          name: 'home'
         })"
       >
        <i class="pi pi-send" style="font-size: 1.2rem"></i>

@@ -1,5 +1,5 @@
 <!-- 예시 -->
-# Simple Messenger
+# Simple Talk
 
 ## Stacks
 
@@ -21,7 +21,7 @@
 
 ## 💬 Overview
 
-Simple Messenger(임시)는 Supabase를 사용한 실시간 일대일 채팅 서비스입니다.<br>
+Simple Talk는 Supabase를 사용한 실시간 일대일 채팅 서비스입니다.<br>
 Vue3.0 + Typescript + Supabase로 개발 중입니다. 🌝
 
 구현 중인 서비스는 아래와 같습니다. 
@@ -81,8 +81,7 @@ npm run dev
     * 기능 보완
       - 그룹 채팅 기능
       - 메신저에 이미지 및 파일 첨부 기능
-      - 탈퇴 기능 및 탈퇴 후 처리
-      - 메신저 조회 infinite scroll 적용 (성능 개선)
+      - 메신저 조회 infinite scroll 적용 (대화 조회 성능 개선)
     * 리팩토링, 증복 코드 제거, 성능 개선 🙃
 
 

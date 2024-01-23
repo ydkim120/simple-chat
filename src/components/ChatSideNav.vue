@@ -9,7 +9,8 @@
         class="chat-side-nav-link"
         @click="router.push({ name: 'chat-user-info' })"
       >
-        <UserProfilePhoto 
+        <UserProfilePhoto
+          :loading="!store.isUserInfo"
           :src="store.userInfo && store.userInfo.photo ? store.userInfo.photo : ''"
           width="80px"
           height="80px"
@@ -36,6 +37,20 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { userInfoType } from '@/@types'
+import { useConfirm } from "primevue/useconfirm"
+
+const confirmDialog = useConfirm()
+
+const confirm = (message: string, acceptFunc: Function) => {
+  confirmDialog.require({
+    message,
+    acceptLabel: '확인',
+    rejectLabel: '취소',
+    rejectClass: 'p-button-secondary',
+    accept: () => acceptFunc() || false,
+    reject: () => false
+  })
+}
 
 const store = useUserAuthStore()
 const router = useRouter()
@@ -61,15 +76,14 @@ onMounted(() => {
 })
 
 const handleLogout = async () => {
-  const done = confirm('로그아웃 하시겠습니까?')
-  if (!done) return
-
-  try {
-    await store.logoutUser()
-  } catch (error) {
-    const errorMessage = store.getErrorMessage(error)
-    if (errorMessage) alert(errorMessage)
-  }
+  confirm('로그아웃 하시겠습니까?', async () => {
+    try {
+      await store.logoutUser()
+    } catch (error) {
+      const errorMessage = store.getErrorMessage(error)
+      if (errorMessage) alert(errorMessage)
+    }
+  })
 }
 
 const sideNavList = ref([
