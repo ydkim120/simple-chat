@@ -94,7 +94,7 @@ export const useChatStore: any = defineStore({
      * @param {Number} from, to 찾는 범위 설정
      */
     async getChannelList(userIdList = [], from = 0 , to = 10) {
-      console.log('@@@ >>> ', authStore.userInfo)
+      // console.log('@@@ >>> ', authStore.userInfo)
       const user_id_list = [authStore?.userInfo?.id, ...userIdList]
 
       const { data: channels, error } = await sb

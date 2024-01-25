@@ -2,8 +2,8 @@
   <div class="chat-room-list-wrap">
     <ChatListSkeleton v-if="isGetChannelList" />
     <template v-else>
-      <ul 
-        class="chat-room-list" 
+      <ul
+        class="chat-room-list"
         v-if="channelList.length"
       >
         <li
@@ -13,14 +13,14 @@
           @click="routeToDetail(ch.channel_id)"
         >
           <ol v-if="ch.userPhotoList && ch.userPhotoList.length">
-            <li 
-              v-for="(photo, idx) in ch.userPhotoList" 
+            <li
+              v-for="(photo, idx) in ch.userPhotoList"
               :key="`userProfilePhoto_${idx}`"
             >
-              <UserProfilePhoto 
+              <UserProfilePhoto
                 :src="photo"
                 use-online
-                :is-online="ch.userOnlineStatusList 
+                :is-online="ch.userOnlineStatusList
                   ? ch.userOnlineStatusList[idx] === 'online'
                   : false"
                 width="80px"
@@ -62,7 +62,7 @@
           />
         </li>
       </ul>
-      <div 
+      <div
         v-else
         class="common-empty-contents"
       >

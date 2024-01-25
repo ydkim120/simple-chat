@@ -3,18 +3,18 @@
     <h3>예약된 메세지</h3>
     <ReservedChatListSkeleton v-if="isGetReservedList" />
     <template v-else>
-      <ul 
-        class="reserved-chat-list" 
+      <ul
+        class="reserved-chat-list"
         v-if="reservedList.length"
       >
-        <li 
+        <li
           class="reserved-chat-item"
           v-for="chat in reservedList"
           :key="chat.id"
         >
           <ol>
-            <li 
-              v-for="(photo, idx) in chat.userPhotoList" 
+            <li
+              v-for="(photo, idx) in chat.userPhotoList"
               :key="`userProfilePhoto_${idx}`"
             >
               <UserProfilePhoto 
@@ -37,28 +37,28 @@
             <div class="reserved-chat-summary" v-text="chat.contentTxt" />
           </div>
           <div class="edit-button-wrap">
-            <a 
-              class="pi pi-pencil edit-button" 
+            <a
+              class="pi pi-pencil edit-button"
               v-tooltip.top="'메세지 내용 편집'"
               @click="updateReservedChat(chat)"
             />
             <a 
-              class="pi pi-clock edit-button" 
+              class="pi pi-clock edit-button"
               v-tooltip.top="'예약 시간 편집'"
               @click="() => {
                 editingChat = chat
                 activeEditTimeDialog = true
               }"
             />
-            <a 
-              class="pi pi-trash edit-button" 
+            <a
+              class="pi pi-trash edit-button"
               v-tooltip.top="'메세지 삭제'"
               @click="deleteReservedChat(chat.id)"
             />
           </div>
         </li>
       </ul>
-      <div 
+      <div
         v-else
         class="common-empty-contents"
       >
@@ -66,7 +66,7 @@
       </div>
     </template>
 
-    <SetDateTimeDialog  
+    <SetDateTimeDialog
       v-model:visible="activeEditTimeDialog"
       header="메세지 예약 변경"
       save-button-label="메세지 예약 변경"
@@ -128,29 +128,29 @@ const getReservedChatList = async () => {
     const result = await api.chat.getReservedChatsByUserId(authStore.userInfo.id, { from: 0, to: 100})
 
     const reservedChats = result.map(c => {
-      const channelInfo = allChannels.value.find((channel: singleChannelData) => channel.channel_id === c.channel_id)
+      const channelInfo: singleChannelData | undefined = allChannels.value.find((channel: singleChannelData) => channel.channel_id === c.channel_id)
       c.reservedDateTime = convertDateTimeFormat(c.reserved_at)
       c.contentTxt = c?.content?.replace(/<[^>]*>?/g, '') || ''
 
-      return channelInfo 
+      return channelInfo
         ? {
           ...c,
           user_list: channelInfo?.user_list,
           usersNameTxt: channelInfo?.is_me 
             ? myInfo?.user_metadata?.user_name
             : channelInfo.user_list?.filter((user: profileType) => user.id !== myInfo.id)
-              .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, ''),
+              .reduce((acc: string, crr: profileType) => acc ? `, ${crr.user_name}` : crr.user_name, ''),
           userPhotoList: channelInfo.is_me
             ? [myInfo?.photo]
             : c.user_list?.filter((user: profileType) => user.id !== myInfo.id)
-              .map(item => item.user_photo || '')
+                .map((item: profileType) => item.user_photo || '')
           }
         : { ...c }
     })
     reservedList.value = reservedChats
 
   } catch (error) {
-    alert('예약된 메세지 목록 조회에 문제가 발생했습니다.', error)
+    alert('예약된 메세지 목록 조회에 문제가 발생했습니다.: ' + error)
     console.error(error)
   } finally {
     isGetReservedList.value = false
@@ -187,7 +187,7 @@ const updateReservedChat = (data: singleReservedChatData) => {
  * 예약 메세지 예약 시간 변경
  */
 const updateReservedTime = async (
-  date: Date, 
+  date: Date,
   chatInfo: singleReservedChatData | undefined = editingChat.value
 ) => {
   if (!chatInfo) return
@@ -196,7 +196,7 @@ const updateReservedTime = async (
   try {
     const result = await api.chat.updateReservedChat({
       id,
-      content,
+      content: content || '',
       reserved_at_timestamp: +new Date(date)
     })
     if (result) {
@@ -204,7 +204,7 @@ const updateReservedTime = async (
     }
   } catch (error) {
     const errorMessage = chatStore.getErrorMessage(error)
-    if (errorMessage) return alert('메세지 예약 변경을 실패했습니다: ', errorMessage)
+    if (errorMessage) return alert('메세지 예약 변경을 실패했습니다: ' + errorMessage)
   }
 }
 
@@ -220,7 +220,7 @@ const deleteReservedChat = async (id: string) => {
       if (result) return alert('삭제했습니다.')
     } catch (error) {
       console.error(error)
-      return alert('예약된 메세지 삭제에 문제가 발생했습니다.', error)
+      return alert('예약된 메세지 삭제에 문제가 발생했습니다.: ' + error)
     }
   }
 }

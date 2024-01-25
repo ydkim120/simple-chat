@@ -15,7 +15,7 @@
           >
             <template #header="{ chooseCallback, clearCallback }">
               <Button
-                :icon="`pi ${userPhoto ? 'pi-pencil' : 'pi-images'}`" 
+                :icon="`pi ${userPhoto ? 'pi-pencil' : 'pi-images'}`"
                 size="small"
                 rounded
                 outlined
@@ -58,8 +58,8 @@
               v-model="email"
               type="text"
               placeholder="이메일을 입력하세요."
-              @blur="() => { 
-                if (email) email = email.trim() 
+              @blur="() => {
+                if (email) email = email.trim()
               }"
               @keypress.enter.native="handleRegisterUser()"
             />

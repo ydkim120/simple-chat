@@ -32,9 +32,9 @@ export default {
 
         // 여기에서 각 사용자의 Presence 정보를 UI 등에 표시할 수 있습니다.
       })
-      .catch((error) => {
-        console.error('Presence 정보 조회 오류:', error);
-      });
+      // .catch((error) => {
+      //   console.error('Presence 정보 조회 오류:', error);
+      // });
     // const room = sb.channel('online_users')
 
     // room
@@ -114,7 +114,7 @@ export default {
    * [presence] 사용자 로그인 시 Presence를 설정합니다.
    * @param {String} user_email
    */
-  async setPresenceOnLogin (user_email: string) {  
+  async setPresenceOnLogin (user_email: string) {
     try {
       const { error } = await sb
         // .from('online_users')
@@ -138,9 +138,9 @@ export default {
 
       if (error) throw new Error(`Presence 설정 중 오류 발생: ${error.message}`)
 
-      console.log(`사용자 ${user_email}의 Presence가 설정되었습니다.`, data)
-    } catch (err) {
-      console.error(err.message)
+      console.log(`사용자 ${user_email}의 Presence가 설정되었습니다.`)
+    } catch (err: Error) {
+      if (err?.message) console.error(err.message)
     }
   },
   /**
@@ -171,7 +171,7 @@ export default {
 
       console.log(`사용자 ${user_email}의 Presence가 업데이트되었습니다.`);
     } catch (err) {
-      console.error(err.message)
+      if (err?.message) console.error(err.message)
     }
   }
 }

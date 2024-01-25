@@ -208,6 +208,7 @@ import { useUserAuthStore } from '@/store/Auth.store'
 import { userInfoType } from '@/@types'
 import { useProfilePhotoStore } from '@/store/ProfilePhoto.store'
 import { useConfirm } from "primevue/useconfirm"
+import router from '@/router'
 
 const { proxy } = getCurrentInstance()
 
@@ -376,8 +377,10 @@ const saveProfilePhoto = async () => {
 const confirmDeleteAccount = async () => {
   confirm('정말로 탈퇴 하시겠습니까?', async () => {
     const result = await authStore.deleteUser(userInfoData.value?.id)
+    await photoStore.updateUserPhoto('', userInfoData.value?.email)
     if (result) {
       alert('탈퇴처리가 정상적으로 되었습니다.')
+      return router.push({ name: 'home' })
     }
   })
 

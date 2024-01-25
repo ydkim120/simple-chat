@@ -57,7 +57,7 @@ const emit = defineEmits<{
 export interface Props {
   visible: boolean
   header?: string
-  initDate?: Date | undefined
+  initDate?: string | undefined
   minDate?: Date | undefined
   stepMinute?: number
   dateFormat?: string

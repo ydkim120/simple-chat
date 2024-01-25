@@ -11,7 +11,7 @@
       />
       <template v-else>
         <img
-          v-if="props.src && isImageLoadSuccess"
+          v-if="props.src && isImageLoadSuccess" 
           :src="props.src || ''"
           :alt="'profilePhoto'"
           :style="{ width: props.width, height: props.height }"

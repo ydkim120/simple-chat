@@ -2,7 +2,7 @@
 <template>
   <header class="chat-header-search">
     <div class="logo-wrap">
-      <a 
+      <a
         @click="() => router.push({
           name: 'home'
         })"

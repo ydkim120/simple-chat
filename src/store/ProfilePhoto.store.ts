@@ -51,7 +51,7 @@ export const useProfilePhotoStore: any = defineStore({
     },
     // 사용자 정보 > 프로필 사진 정보 업데이트
     // async setUserPhotoInfo() {
-      
+
     //   console.log('this.userInfo ????? ', authStore.userInfo)
     //   if (!authStore.userInfo?.email) return
 
@@ -80,7 +80,7 @@ export const useProfilePhotoStore: any = defineStore({
         .storage
         .from('avatars')
         .createSignedUrls([...photoSourceNames], 60)
-      if (error) return emailList.map(item => '')
+      if (error) return Array.from({ length: emailList.length }, () => '')
 
       return data
     }

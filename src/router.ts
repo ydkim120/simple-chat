@@ -1,8 +1,8 @@
-import { createWebHistory, createRouter } from "vue-router"
+import { createWebHistory, RouteRecordRaw, createRouter } from "vue-router"
 import { useUserAuthStore } from '@/store/Auth.store'
 
 
-const routes = [
+const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "home",

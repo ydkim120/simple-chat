@@ -43,7 +43,7 @@
           <li
             class="chat-item"
             :class="{ '-me': myEmail === msg.user_email }"
-            v-for="(msg, idx) in chatList"
+            v-for="msg in chatList"
             :key="msg.id"
           >
             <ChatBubble
@@ -349,12 +349,8 @@ const setChannelInfo = async (channelId: string | string[]) => {
       usersNameTxt: info.is_me
         ? authStore.userInfo?.user_metadata?.user_name
         : info.user_list.filter((user: profileType) => user.id !== authStore.userInfo.id)
-            .reduce((acc, crr) => acc ? `, ${crr.user_name}` : crr.user_name, '')
+            .reduce((acc: string, crr: profileType) => acc ? `, ${crr.user_name}` : crr.user_name, '')
     }
-    
-    // const myInfo = info.user_list.find((user: profileType) => user.id === authStore.userInfo.id)
-    // myLastLeavedAt.value = myInfo.leaved_at
-
   } catch (error) { console.error(error)}
 }
 

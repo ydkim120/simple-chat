@@ -27,7 +27,7 @@ import Tooltip from 'primevue/tooltip'
 import Calendar from 'primevue/calendar'
 import Badge from 'primevue/badge'
 import OverlayPanel from 'primevue/overlaypanel'
-import Listbox from 'primevue/Listbox'
+import Listbox from 'primevue/listbox'
 
 import Editor from 'primevue/editor'
 import UserProfilePhoto from '@/components/UserProfilePhoto.vue'
