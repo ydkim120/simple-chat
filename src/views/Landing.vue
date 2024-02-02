@@ -1,29 +1,37 @@
 <template>
   <div class="landing-wrap page-wrap">
     <div class="landing-contents">
-      <div class="landing-logo-wrap">
-        <h1 class="landing-logo">
-          <i class="pi pi-send" style="font-size: 2rem" />
-          Simple&nbsp;Talk
-        </h1>
-        <div class="button-area">
-          <a
-            v-if="!authStore.isAuth"
-            class="register-btn"
-            @click="() => activeRegisterDialog = true"
-          >
-            회원가입
-          </a>
-          <Button
-            class="login-btn"
-            severity="secondary"
-            @click="() => {
-              if (authStore.isAuth) router.push({ name: 'chat-list' })
-              else activeLoginDialog = true
-            }"
-            :label="authStore.isAuth ? '대화 계속하기' : '대화 시작하기'"
-            :style="{ width: '120px' }"
-          />
+      <div class="landing">
+
+        <div class="landing-logo-wrap">
+          <div class="typing-wrap">
+            <i class="pi pi-send typing" style="font-size: 2rem" />
+            <Typed :options="options">
+              <h1 class="landing-logo typing" />
+            </Typed>
+          </div>
+          <!-- <h1 class="landing-logo">
+            Simple&nbsp;Talk
+          </h1> -->
+          <div class="button-area">
+            <a
+              v-if="!authStore.isAuth"
+              class="register-btn"
+              @click="() => activeRegisterDialog = true"
+            >
+              회원가입
+            </a>
+            <Button
+              class="login-btn"
+              severity="secondary"
+              @click="() => {
+                if (authStore.isAuth) router.push({ name: 'chat-list' })
+                else activeLoginDialog = true
+              }"
+              :label="authStore.isAuth ? '대화 계속하기' : '대화 시작하기'"
+              :style="{ width: '120px' }"
+            />
+          </div>
         </div>
       </div>
       <img
@@ -68,6 +76,18 @@ import LoginUser from './Auth/LoginUser.vue'
 import RegisterUser from './Auth/RegisterUser.vue'
 import { useUserAuthStore } from '@/store/Auth.store'
 import { useConfirm } from "primevue/useconfirm"
+
+import { Typed } from "@duskmoon/vue3-typed-js"
+import type { TypedOptions } from "@duskmoon/vue3-typed-js"
+
+const options: TypedOptions = {
+  strings: ['Simple Talk'],
+  loop: true,
+  typeSpeed: 80,
+  backSpeed: 50,
+  backDelay: 3000,
+  showCursor: false
+}
 
 const router = useRouter()
 
@@ -125,6 +145,13 @@ const handleLogout = async () => {
     justify-content: center;
     gap: var(--gap-xs);
     align-items: center;
+    .typing-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--gap-xs);
+      width: 300px;
+      height: 60px;
+    }
     .landing-logo {
       font-weight: 900;
       color: var(--secondary);
